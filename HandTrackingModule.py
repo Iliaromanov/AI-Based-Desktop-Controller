@@ -32,7 +32,7 @@ class HandDetector:
                     self.mpDraw.draw_landmarks(img, hand_landmarks, self.mpHands.HAND_CONNECTIONS)
         return img
 
-    def find_positions(self, img, hand_num=0, draw=True):
+    def find_positions(self, img, hand_num=0):
         '''
         Returns an array of hand landmark positions
         '''
@@ -46,8 +46,8 @@ class HandDetector:
             for id, lm in enumerate(hand.landmark):
                 x_pos, y_pos = int(lm.x * width), int(lm.y * height)
                 landmark_positions.append((id, x_pos, y_pos))
-                if draw and id == 4:
-                    cv2.circle(img, (x_pos, y_pos), 15, (255, 255, 0), cv2.FILLED)
+                # if draw and id == 4:
+                #     cv2.circle(img, (x_pos, y_pos), 15, (255, 255, 0), cv2.FILLED)
 
         return landmark_positions
 
