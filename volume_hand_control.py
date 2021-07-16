@@ -51,20 +51,23 @@ while True:
         #cv2.line(img, (thumb_x, thumb_y), (index_x, index_y), (250, 0, 50), 3)
 
         # Calculate distance between the two finger tips
-        dist = math.hypot(thumb_x-index_x, thumb_y-index_y)
-        print(dist)
+        # dist = math.hypot(thumb_x-index_x, thumb_y-index_y)
+        # print(dist)
         # Assuming max dist between fingers is 425 and min is 15
         # Transform distance into range of volume
-        vol = np.interp(dist, [50, 200], [MIN_VOLUME, MAX_VOLUME])
         # Set the volume to the calculated value
-        # if MIN_VOLUME < vol and vol < MAX_VOLUME:  # just to be sure
-        #     volume.SetMasterVolumeLevel(vol, None)
 
-        if index_x in range(50, 85) and index_y in range(100, 550):
+
+        if index_x in range(50, 95) and index_y in range(100, 400):
             volume_bar_y = index_y
+            vol = np.interp(volume_bar_y, [100, 400], [MAX_VOLUME, MIN_VOLUME])
+            print(volume_bar_y, vol)
+            if MIN_VOLUME < vol < MAX_VOLUME:  # just to be sure
 
-        vol_percent = np.interp(vol, [MIN_VOLUME, MAX_VOLUME], [0, 100])
-        cv2.putText(img, f"Vol: {int(vol_percent)}%", (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
+                volume.SetMasterVolumeLevel(vol, None)
+
+            vol_percent = np.interp(vol, [MIN_VOLUME, MAX_VOLUME], [0, 100])
+            cv2.putText(img, f"Vol: {int(vol_percent)}%", (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
 
     cv2.rectangle(img, (50, 100), (95, 400), (250, 0, 0), 3)
     cv2.rectangle(img, (50, volume_bar_y), (95, 400), (250, 0, 0), cv2.FILLED)
@@ -75,7 +78,6 @@ while True:
     prev_time = cur_time
     # Displaying FPS
     cv2.putText(img, f"FPS: {int(fps)}", (40, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
-
 
     # Displaying video frame
     cv2.imshow("Volume Hand Control", img)
