@@ -32,7 +32,7 @@ prev_time = 0  # set initial time for fps tracking
 
 while True:
     success, img = cap.read()
-    volume_bar_y = int(np.interp(volume.GetMasterVolumeLevel(), [MIN_VOLUME, MAX_VOLUME], [100, 400]))
+    volume_bar_y = int(np.interp(volume.GetMasterVolumeLevel(), [MIN_VOLUME, MAX_VOLUME], [400, 100]))
     img = detector.find_hands(img)
     landmark_list = detector.find_positions(img)
 
@@ -66,8 +66,8 @@ while True:
         vol_percent = np.interp(vol, [MIN_VOLUME, MAX_VOLUME], [0, 100])
         cv2.putText(img, f"Vol: {int(vol_percent)}%", (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
 
-    cv2.rectangle(img, (50, 100), (85, 400), (250, 0, 0), 3)
-    cv2.rectangle(img, (50, volume_bar_y), (85, 400), (250, 0, 0), cv2.FILLED)
+    cv2.rectangle(img, (50, 100), (95, 400), (250, 0, 0), 3)
+    cv2.rectangle(img, (50, volume_bar_y), (95, 400), (250, 0, 0), cv2.FILLED)
 
     # Tracking fps
     cur_time = time.time()
