@@ -71,6 +71,7 @@ while True:
 
     cv2.rectangle(img, (50, 100), (95, 400), (250, 0, 0), 3)
     cv2.rectangle(img, (50, volume_bar_y), (95, 400), (250, 0, 0), cv2.FILLED)
+    cv2.line(img, (45, volume_bar_y), (100, volume_bar_y), (255, 0, 25), 5)
 
     # Tracking fps
     cur_time = time.time()
