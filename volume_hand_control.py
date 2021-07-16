@@ -47,17 +47,6 @@ while True:
         # # Draw circle at center between finger tips
         # cv2.circle(img, (center_x, center_y), 9, (250, 0, 0), cv2.FILLED)
 
-        # Draw line between target finger tips
-        #cv2.line(img, (thumb_x, thumb_y), (index_x, index_y), (250, 0, 50), 3)
-
-        # Calculate distance between the two finger tips
-        # dist = math.hypot(thumb_x-index_x, thumb_y-index_y)
-        # print(dist)
-        # Assuming max dist between fingers is 425 and min is 15
-        # Transform distance into range of volume
-        # Set the volume to the calculated value
-
-
         if index_x in range(50, 95) and index_y in range(100, 400):
             volume_bar_y = index_y
             vol = np.interp(volume_bar_y, [100, 400], [MAX_VOLUME, MIN_VOLUME])
