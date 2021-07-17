@@ -17,39 +17,23 @@ devices = AudioUtilities.GetSpeakers()
 interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = cast(interface, POINTER(IAudioEndpointVolume))
 
-MIN_VOLUME, MAX_VOLUME = volume.GetVolumeRange()[0], volume.GetVolumeRange()[1]
-
 cap = cv2.VideoCapture(0)
 cap.set(3, CAP_WIDTH)  # id 3 => capture window width
 cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
 
 detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
 
-
 prev_time = 0  # set initial time for fps tracking
-
-cur_vol = volume.GetMasterVolumeLevel()
-print("Min: ", MIN_VOLUME)
-print("Retrieved vol num: ", cur_vol)
-cur_volume_percent = (cur_vol - MIN_VOLUME) / -MIN_VOLUME * 100
-print("Actual volume: ", cur_volume_percent)
-exit()
 
 while True:
     success, img = cap.read()
-    volume_bar_y = int(np.interp(volume.GetMasterVolumeLevel(), [MIN_VOLUME, MAX_VOLUME], [VOL_BAR_Y2, VOL_BAR_Y1]))
-
-    cur_vol = volume.GetMasterVolumeLevel()
-    cur_volume_percent = (cur_vol + MIN_VOLUME) / MIN_VOLUME * 100
-    print("Actual volume: ", cur_volume_percent)
     img = detector.find_hands(img)
     landmark_list = detector.find_positions(img)
 
-    vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1) * 100
-    #print(vol_percent)
-    # print(volume_bar_y)
-    # vol_percent = np.interp(volume_bar_y, [VOL_BAR_Y1, VOL_BAR_Y2], [0, 100])
-    cv2.putText(img, f"Vol: {int(vol_percent)}%", (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
+    vol_percent = volume.GetMasterVolumeLevelScalar()
+    cv2.putText(img, f"Vol: {round(vol_percent * 100)}%", (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
+
+    volume_bar_y = VOL_BAR_Y2 - round((VOL_BAR_Y2 - VOL_BAR_Y1) * vol_percent)
 
     if landmark_list:
         thumb_x, thumb_y = landmark_list[4][1], landmark_list[4][2]
@@ -64,14 +48,11 @@ while True:
 
         if index_x in range(50, 95) and index_y in range(VOL_BAR_Y1, VOL_BAR_Y2):
             volume_bar_y = index_y
-            vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1) * 100
-            vol = int(vol_percent / 100 * MIN_VOLUME)
-            #print(vol)
-            if MIN_VOLUME < vol < MAX_VOLUME:  # just to be sure
-                volume.SetMasterVolumeLevel(vol, None)
+            vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1)
+            volume.SetMasterVolumeLevelScalar(vol_percent, None)
 
 
-    cv2.rectangle(img, (300, 55), (750, 20), (250, 0, 0), 3)
+    # cv2.rectangle(img, (300, 55), (750, 20), (250, 0, 0), 3)
 
 
     cv2.rectangle(img, (45, VOL_BAR_Y1), (95, VOL_BAR_Y2), (250, 0, 0), 3)
