@@ -12,6 +12,7 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 
 CAP_WIDTH, CAP_HEIGHT = 1000, 750
+VOL_BAR_Y1, VOL_BAR_Y2 = 150, 450
 devices = AudioUtilities.GetSpeakers()
 interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = cast(interface, POINTER(IAudioEndpointVolume))
@@ -27,14 +28,28 @@ detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
 
 prev_time = 0  # set initial time for fps tracking
 
-
-
+cur_vol = volume.GetMasterVolumeLevel()
+print("Min: ", MIN_VOLUME)
+print("Retrieved vol num: ", cur_vol)
+cur_volume_percent = (cur_vol - MIN_VOLUME) / -MIN_VOLUME * 100
+print("Actual volume: ", cur_volume_percent)
+exit()
 
 while True:
     success, img = cap.read()
-    volume_bar_y = int(np.interp(volume.GetMasterVolumeLevel(), [MIN_VOLUME, MAX_VOLUME], [400, 100]))
+    volume_bar_y = int(np.interp(volume.GetMasterVolumeLevel(), [MIN_VOLUME, MAX_VOLUME], [VOL_BAR_Y2, VOL_BAR_Y1]))
+
+    cur_vol = volume.GetMasterVolumeLevel()
+    cur_volume_percent = (cur_vol + MIN_VOLUME) / MIN_VOLUME * 100
+    print("Actual volume: ", cur_volume_percent)
     img = detector.find_hands(img)
     landmark_list = detector.find_positions(img)
+
+    vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1) * 100
+    #print(vol_percent)
+    # print(volume_bar_y)
+    # vol_percent = np.interp(volume_bar_y, [VOL_BAR_Y1, VOL_BAR_Y2], [0, 100])
+    cv2.putText(img, f"Vol: {int(vol_percent)}%", (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
 
     if landmark_list:
         thumb_x, thumb_y = landmark_list[4][1], landmark_list[4][2]
@@ -47,20 +62,21 @@ while True:
         # # Draw circle at center between finger tips
         # cv2.circle(img, (center_x, center_y), 9, (250, 0, 0), cv2.FILLED)
 
-        if index_x in range(50, 95) and index_y in range(100, 400):
+        if index_x in range(50, 95) and index_y in range(VOL_BAR_Y1, VOL_BAR_Y2):
             volume_bar_y = index_y
-            vol = np.interp(volume_bar_y, [100, 400], [MAX_VOLUME, MIN_VOLUME])
-            print(volume_bar_y, vol)
+            vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1) * 100
+            vol = int(vol_percent / 100 * MIN_VOLUME)
+            #print(vol)
             if MIN_VOLUME < vol < MAX_VOLUME:  # just to be sure
-
                 volume.SetMasterVolumeLevel(vol, None)
 
-            vol_percent = np.interp(vol, [MIN_VOLUME, MAX_VOLUME], [0, 100])
-            cv2.putText(img, f"Vol: {int(vol_percent)}%", (40, 80), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2)
 
-    cv2.rectangle(img, (50, 100), (95, 400), (250, 0, 0), 3)
-    cv2.rectangle(img, (50, volume_bar_y), (95, 400), (250, 0, 0), cv2.FILLED)
-    cv2.line(img, (45, volume_bar_y), (100, volume_bar_y), (255, 0, 25), 5)
+    cv2.rectangle(img, (300, 55), (750, 20), (250, 0, 0), 3)
+
+
+    cv2.rectangle(img, (45, VOL_BAR_Y1), (95, VOL_BAR_Y2), (250, 0, 0), 3)
+    cv2.rectangle(img, (45, volume_bar_y), (95, VOL_BAR_Y2), (250, 0, 0), cv2.FILLED)
+    cv2.line(img, (40, volume_bar_y), (100, volume_bar_y), (255, 0, 25), 5)
 
     # Tracking fps
     cur_time = time.time()
