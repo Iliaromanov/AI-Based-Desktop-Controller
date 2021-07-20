@@ -4,6 +4,8 @@ import time
 
 
 class HandDetector:
+    finger_tip_ids = [4, 8, 12, 16, 20]
+
     def __init__(self, mode=False, max_num_hands=2,
                  min_detection_confidence=0.5, min_tracking_confidence=0.5):
         '''
@@ -34,7 +36,7 @@ class HandDetector:
 
     def find_positions(self, img, hand_num=0):
         '''
-        Returns an array of hand landmark positions
+        Returns a list of hand landmark positions
         '''
         height, width, channels = img.shape  # get frames dimensions and channels
 
@@ -46,10 +48,27 @@ class HandDetector:
             for id, lm in enumerate(hand.landmark):
                 x_pos, y_pos = int(lm.x * width), int(lm.y * height)
                 landmark_positions.append((id, x_pos, y_pos))
-                # if draw and id == 4:
-                #     cv2.circle(img, (x_pos, y_pos), 15, (255, 255, 0), cv2.FILLED)
 
         return landmark_positions
+
+    @classmethod
+    def fingers_up(cls, lm_positions):
+        '''
+        Detects which fingers are up and returns a list of length 5,
+        one value for each finger; 0 = finger down, 1 = finger up
+        '''
+        result = []
+
+        # Special case for thumb
+        result.append(1) if lm_positions[4][1] > lm_positions[3][1] else result.append(0)
+
+        # Check rest of the fingers
+        for id in cls.finger_tip_ids[1:]:
+            result.append(1) if lm_positions[id][2] < lm_positions[id - 2][2] else result.append(0)
+
+        return result
+
+
 
 
 def main():
