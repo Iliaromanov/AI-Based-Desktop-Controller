@@ -69,8 +69,8 @@ class HandDetector:
 
         return result
 
-    @staticmethod
-    def find_distance(img, lm_positions, finger_1=1, finger_2=2, draw=True, radius=15, thickness=3):
+    @classmethod
+    def find_distance(cls, img, lm_positions, finger_1=1, finger_2=2, draw=True, radius=10, thickness=3):
         '''
         Finds the distance between two specified finger tips, and optionally draws a line between them
 
@@ -85,8 +85,8 @@ class HandDetector:
         Returns:
             distance, img,
         '''
-        x1, y1 = lm_positions[finger_1][1:]
-        x2, y2 = lm_positions[finger_2][1:]
+        x1, y1 = lm_positions[cls.finger_tip_ids[finger_1]][1:]
+        x2, y2 = lm_positions[cls.finger_tip_ids[finger_2]][1:]
         center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
 
         dist = np.hypot((x1, x2), (y1, y2))
