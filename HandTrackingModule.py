@@ -89,7 +89,7 @@ class HandDetector:
         x2, y2 = lm_positions[cls.finger_tip_ids[finger_2]][1:]
         center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
 
-        dist = np.hypot((x1, x2), (y1, y2))
+        dist = np.hypot((x1+x2), (y1+y2))
 
         if draw:
             cv2.circle(img, (x1, y1), radius, (255, 0, 0), cv2.FILLED)
