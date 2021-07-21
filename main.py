@@ -28,6 +28,7 @@ prev_time = 0  # set initial time for fps tracking
 while True:
     success, img = cap.read()
     img = detector.find_hands(img)
+    # img = cv2.flip(img, 1)
     landmark_list = detector.find_positions(img)
 
     vol_percent = volume.GetMasterVolumeLevelScalar()
@@ -39,6 +40,11 @@ while True:
         thumb_x, thumb_y = landmark_list[4][1], landmark_list[4][2]
         index_x, index_y = landmark_list[8][1], landmark_list[8][2]
         center_x, center_y = (thumb_x + index_x) // 2, (thumb_y + index_y) // 2
+
+        fingers_up = htm.HandDetector.fingers_up(landmark_list)
+        if fingers_up[1] and fingers_up[2]:
+            dist, img = htm.HandDetector.find_distance(img, landmark_list)
+            print(dist)
 
         # Draw circles over target finger tips
         # cv2.circle(img, (thumb_x, thumb_y), 12, (250, 0, 0), cv2.FILLED)
