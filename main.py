@@ -1,5 +1,6 @@
 import cv2
 import mediapipe
+import pyautogui
 import numpy as np
 import time
 import math
@@ -10,13 +11,19 @@ from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
-
+# Setting Dimensions and Parameters
 CAP_WIDTH, CAP_HEIGHT = 1000, 750
+VOL_BAR_X1, VOL_BAR_X2 = 45, 95
 VOL_BAR_Y1, VOL_BAR_Y2 = 150, 450
+MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = 200, CAP_WIDTH - 100
+MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2 = 90, CAP_HEIGHT-300
+
+# Retrieving computer audio setup information
 devices = AudioUtilities.GetSpeakers()
 interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = cast(interface, POINTER(IAudioEndpointVolume))
 
+# Set up for video capture window
 cap = cv2.VideoCapture(0)
 cap.set(3, CAP_WIDTH)  # id 3 => capture window width
 cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
@@ -43,27 +50,28 @@ while True:
 
         fingers_up = htm.HandDetector.fingers_up(landmark_list)
         if fingers_up[1] and fingers_up[2]:
-            dist, img = htm.HandDetector.find_distance(img, landmark_list)
-            print(dist)
+            dist, img = htm.HandDetector.find_distance(img, landmark_list, radius=8)
 
-        # Draw circles over target finger tips
-        # cv2.circle(img, (thumb_x, thumb_y), 12, (250, 0, 0), cv2.FILLED)
-        # cv2.circle(img, (index_x, index_y), 12, (250, 0, 0), cv2.FILLED)
-        # # Draw circle at center between finger tips
-        # cv2.circle(img, (center_x, center_y), 9, (250, 0, 0), cv2.FILLED)
-
-        if index_x in range(50, 95) and index_y in range(VOL_BAR_Y1, VOL_BAR_Y2):
+        if index_x in range(VOL_BAR_X1, VOL_BAR_X2) and index_y in range(VOL_BAR_Y1, VOL_BAR_Y2):
+            cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (0, 255, 0), 3)
             volume_bar_y = index_y
             vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1)
             volume.SetMasterVolumeLevelScalar(vol_percent, None)
 
+        if index_x in range(MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2) and \
+           index_y in range(MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2):
+            cv2.rectangle(img, (MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_Y1),
+                          (MOUSE_CTRL_WINDOW_X2, MOUSE_CTRL_WINDOW_Y2), (0, 255, 0), 3)
 
-    # cv2.rectangle(img, (300, 55), (750, 20), (250, 0, 0), 3)
 
+    # Drawing volume control bar
+    cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (250, 0, 0), 1)
+    cv2.rectangle(img, (VOL_BAR_X1, volume_bar_y), (VOL_BAR_X2, VOL_BAR_Y2), (250, 0, 0), cv2.FILLED)
+    cv2.line(img, (VOL_BAR_X1 - 5, volume_bar_y), (VOL_BAR_X2 + 5, volume_bar_y), (255, 0, 25), 5)
 
-    cv2.rectangle(img, (45, VOL_BAR_Y1), (95, VOL_BAR_Y2), (250, 0, 0), 3)
-    cv2.rectangle(img, (45, volume_bar_y), (95, VOL_BAR_Y2), (250, 0, 0), cv2.FILLED)
-    cv2.line(img, (40, volume_bar_y), (100, volume_bar_y), (255, 0, 25), 5)
+    # Drawing mouse controller box
+    cv2.rectangle(img, (MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_Y1),
+                  (MOUSE_CTRL_WINDOW_X2, MOUSE_CTRL_WINDOW_Y2), (250, 0, 0), 1)
 
     # Tracking fps
     cur_time = time.time()
