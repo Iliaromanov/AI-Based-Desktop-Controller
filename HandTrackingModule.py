@@ -2,6 +2,7 @@ import cv2
 import mediapipe as mp
 import time
 
+import numpy as np
 
 class HandDetector:
     finger_tip_ids = [4, 8, 12, 16, 20]
@@ -68,7 +69,36 @@ class HandDetector:
 
         return result
 
+    @staticmethod
+    def find_distance(img, lm_positions, finger_1=1, finger_2=2, draw=True, radius=15, thickness=3):
+        '''
+        Finds the distance between two specified finger tips, and optionally draws a line between them
 
+        Params:
+            img:
+            lm_positions:
+            finger_1:
+            finger_2:
+            draw:
+            radius:
+            thickness:
+        Returns:
+            distance, img,
+        '''
+        x1, y1 = lm_positions[finger_1][1:]
+        x2, y2 = lm_positions[finger_2][1:]
+        center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
+
+        dist = np.hypot((x1, x2), (y1, y2))
+
+        if draw:
+            cv2.circle(img, (x1, y1), radius, (255, 0, 0), cv2.FILLED)
+            cv2.circle(img, (x2, y2), radius, (255, 0, 0), cv2.FILLED)
+            cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), thickness)
+
+            cv2.circle(img, (center_x, center_y), radius, (255, 0, 0), cv2.FILLED)
+
+        return dist, img
 
 
 def main():
