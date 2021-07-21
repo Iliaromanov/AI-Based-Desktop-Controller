@@ -9,9 +9,9 @@ class HandDetector:
 
     def __init__(self, mode=False, max_num_hands=2,
                  min_detection_confidence=0.5, min_tracking_confidence=0.5):
-        '''
+        """
         Initializing attributes
-        '''
+        """
         self.mode = mode
         self.max_num_hands = max_num_hands
         self.min_detection_confidence = min_detection_confidence
@@ -23,9 +23,9 @@ class HandDetector:
         self.mpDraw = mp.solutions.drawing_utils
 
     def find_hands(self, img, draw=True):
-        '''
+        """
         Detects hands in given img and optionally highlights the detected landmarks
-        '''
+        """
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert frame img to RGB
         self.results = self.hands.process(img_rgb)
 
@@ -36,9 +36,9 @@ class HandDetector:
         return img
 
     def find_positions(self, img, hand_num=0):
-        '''
+        """
         Returns a list of hand landmark positions
-        '''
+        """
         height, width, channels = img.shape  # get frames dimensions and channels
 
         landmark_positions = []
@@ -54,10 +54,10 @@ class HandDetector:
 
     @classmethod
     def fingers_up(cls, lm_positions):
-        '''
+        """
         Detects which fingers are up and returns a list of length 5,
         one value for each finger; 0 = finger down, 1 = finger up
-        '''
+        """
         result = []
 
         # Special case for thumb
@@ -70,8 +70,8 @@ class HandDetector:
         return result
 
     @classmethod
-    def find_distance(cls, img, lm_positions, finger_1=1, finger_2=2, draw=True, radius=10, thickness=3):
-        '''
+    def find_distance(cls, img, lm_positions, finger_1=1, finger_2=2, draw=True, radius=10, thickness=3, click_dist=20):
+        """
         Finds the distance between two specified finger tips, and optionally draws a line between them
 
         Params:
@@ -84,19 +84,22 @@ class HandDetector:
             thickness:
         Returns:
             distance, img,
-        '''
+        """
         x1, y1 = lm_positions[cls.finger_tip_ids[finger_1]][1:]
         x2, y2 = lm_positions[cls.finger_tip_ids[finger_2]][1:]
         center_x, center_y = (x1 + x2) // 2, (y1 + y2) // 2
 
-        dist = np.hypot((x1+x2), (y1+y2))
+        dist = np.hypot((x1-x2), (y1-y2))
 
         if draw:
             cv2.circle(img, (x1, y1), radius, (255, 0, 0), cv2.FILLED)
             cv2.circle(img, (x2, y2), radius, (255, 0, 0), cv2.FILLED)
             cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), thickness)
 
-            cv2.circle(img, (center_x, center_y), radius, (255, 0, 0), cv2.FILLED)
+            if dist <= click_dist:
+                cv2.circle(img, (center_x, center_y), radius, (0, 255, 0), cv2.FILLED)
+            else:
+                cv2.circle(img, (center_x, center_y), radius, (255, 0, 0), cv2.FILLED)
 
         return dist, img
 
