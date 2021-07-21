@@ -49,8 +49,15 @@ while True:
         center_x, center_y = (thumb_x + index_x) // 2, (thumb_y + index_y) // 2
 
         fingers_up = htm.HandDetector.fingers_up(landmark_list)
+
+
+        # NOTE: when in click mode, set mouse location to center circle; NOT index tip
+        # Left click
         if fingers_up[1] and fingers_up[2]:
             dist, img = htm.HandDetector.find_distance(img, landmark_list, radius=8)
+        # Right click
+        elif fingers_up[1] and fingers_up[0]:
+            dist, img = htm.HandDetector.find_distance(img, landmark_list, finger_2=0, radius=8)
 
         if index_x in range(VOL_BAR_X1, VOL_BAR_X2) and index_y in range(VOL_BAR_Y1, VOL_BAR_Y2):
             cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (0, 255, 0), 3)
