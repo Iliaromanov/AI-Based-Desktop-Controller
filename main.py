@@ -1,6 +1,7 @@
 import cv2
 import mediapipe
 import pyautogui
+import autopy
 import numpy as np
 import time
 import math
@@ -35,7 +36,7 @@ detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
 prev_time = 0  # set initial time for fps tracking
 
 while True:
-    mouse_x, mouse_y = pyautogui.position()
+    # mouse_x, mouse_y = pyautogui.position()
 
     success, img = cap.read()
     img = detector.find_hands(img)
@@ -54,35 +55,34 @@ while True:
 
         fingers_up = htm.HandDetector.fingers_up(landmark_list)
 
+        # Mouse control
+        if index_x in range(MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2) and \
+           index_y in range(MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2):
+            cv2.rectangle(img, (MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_Y1),
+                          (MOUSE_CTRL_WINDOW_X2, MOUSE_CTRL_WINDOW_Y2), (0, 255, 0), 3)
+            # NOTE: when in click mode, set mouse location to center circle; NOT index tip
+            # Left click
+            if fingers_up[1] and fingers_up[2]:
+                dist, img, click = htm.HandDetector.find_distance(img, landmark_list, radius=8)
+                if click:
+                    autopy.mouse.click()
+            # Right click **thumb up/down only recognized for right hand; could add feature to choose, left or right
+            elif fingers_up[1] and fingers_up[0]:
+                dist, img, click = htm.HandDetector.find_distance(img, landmark_list, finger_2=0, radius=8)
+                if click:
+                    pyautogui.click(button="right")
+            # Moving mode
+            elif fingers_up[1]:
+                mouse_x = np.interp(index_x, [MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2], [0, RESOLUTION_W])
+                mouse_y = np.interp(index_y, [MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2], [0, RESOLUTION_H])
 
-        # NOTE: when in click mode, set mouse location to center circle; NOT index tip
-        # Left click
-        if fingers_up[1] and fingers_up[2]:
-            dist, img, click = htm.HandDetector.find_distance(img, landmark_list, radius=8)
-            if click:
-                pyautogui.click()
-        # Right click **thumb up/down only recognized for right hand; could add feature to choose, left or right
-        elif fingers_up[1] and fingers_up[0]:
-            dist, img, click = htm.HandDetector.find_distance(img, landmark_list, finger_2=0, radius=8)
-            if click:
-                pyautogui.click(button="right")
-        # Moving mode
-        elif fingers_up[1]:
-            mouse_x = np.interp(index_x, [MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2], [0, RESOLUTION_W])
-            mouse_y = np.interp(index_y, [MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2], [0, RESOLUTION_H])
+                autopy.mouse.move(mouse_x, mouse_y)
 
         if index_x in range(VOL_BAR_X1, VOL_BAR_X2) and index_y in range(VOL_BAR_Y1, VOL_BAR_Y2):
             cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (0, 255, 0), 3)
             volume_bar_y = index_y
             vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1)
             volume.SetMasterVolumeLevelScalar(vol_percent, None)
-
-        if index_x in range(MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2) and \
-           index_y in range(MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2):
-            cv2.rectangle(img, (MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_Y1),
-                          (MOUSE_CTRL_WINDOW_X2, MOUSE_CTRL_WINDOW_Y2), (0, 255, 0), 3)
-
-    pyautogui.moveTo(mouse_x, mouse_y)
 
     # Drawing volume control bar
     cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (250, 0, 0), 1)
