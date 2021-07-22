@@ -12,6 +12,7 @@ from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 # Setting Dimensions and Parameters
+RESOLUTION_W, RESOLUTION_H = pyautogui.size()
 CAP_WIDTH, CAP_HEIGHT = 1000, 750
 VOL_BAR_X1, VOL_BAR_X2 = 45, 95
 VOL_BAR_Y1, VOL_BAR_Y2 = 150, 450
@@ -33,6 +34,8 @@ detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
 prev_time = 0  # set initial time for fps tracking
 
 while True:
+    mouse_x, mouse_y = pyautogui.position()
+
     success, img = cap.read()
     img = detector.find_hands(img)
     # img = cv2.flip(img, 1)
@@ -55,9 +58,13 @@ while True:
         # Left click
         if fingers_up[1] and fingers_up[2]:
             dist, img = htm.HandDetector.find_distance(img, landmark_list, radius=8)
-        # Right click
+        # Right click **thumb up/down only recognized for right hand; could add feature to choose, left or right
         elif fingers_up[1] and fingers_up[0]:
             dist, img = htm.HandDetector.find_distance(img, landmark_list, finger_2=0, radius=8)
+        # Moving mode
+        elif fingers_up[1]:
+            mouse_x = np.interp(index_x, [MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2], [0, RESOLUTION_W])
+            mouse_y = np.interp(index_y, [MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2], [0, RESOLUTION_H])
 
         if index_x in range(VOL_BAR_X1, VOL_BAR_X2) and index_y in range(VOL_BAR_Y1, VOL_BAR_Y2):
             cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (0, 255, 0), 3)
@@ -70,6 +77,7 @@ while True:
             cv2.rectangle(img, (MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_Y1),
                           (MOUSE_CTRL_WINDOW_X2, MOUSE_CTRL_WINDOW_Y2), (0, 255, 0), 3)
 
+    pyautogui.moveTo(mouse_x, mouse_y)
 
     # Drawing volume control bar
     cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (250, 0, 0), 1)
@@ -89,4 +97,4 @@ while True:
 
     # Displaying video frame
     cv2.imshow("Volume Hand Control", img)
-    cv2.waitKey(5)
+    cv2.waitKey(1)
