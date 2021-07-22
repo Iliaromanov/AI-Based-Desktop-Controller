@@ -98,10 +98,12 @@ class HandDetector:
 
             if dist <= click_dist:
                 cv2.circle(img, (center_x, center_y), radius, (0, 255, 0), cv2.FILLED)
+                click = True
             else:
                 cv2.circle(img, (center_x, center_y), radius, (255, 0, 0), cv2.FILLED)
+                click = False
 
-        return dist, img
+        return dist, img, click
 
 
 def main():
