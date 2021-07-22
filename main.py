@@ -13,6 +13,7 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 # Setting Dimensions and Parameters
 RESOLUTION_W, RESOLUTION_H = pyautogui.size()
+print(f"Detected screen resolution: {RESOLUTION_W}x{RESOLUTION_H}")
 CAP_WIDTH, CAP_HEIGHT = 1000, 750
 VOL_BAR_X1, VOL_BAR_X2 = 45, 95
 VOL_BAR_Y1, VOL_BAR_Y2 = 150, 450
@@ -57,10 +58,14 @@ while True:
         # NOTE: when in click mode, set mouse location to center circle; NOT index tip
         # Left click
         if fingers_up[1] and fingers_up[2]:
-            dist, img = htm.HandDetector.find_distance(img, landmark_list, radius=8)
+            dist, img, click = htm.HandDetector.find_distance(img, landmark_list, radius=8)
+            if click:
+                pyautogui.click()
         # Right click **thumb up/down only recognized for right hand; could add feature to choose, left or right
         elif fingers_up[1] and fingers_up[0]:
-            dist, img = htm.HandDetector.find_distance(img, landmark_list, finger_2=0, radius=8)
+            dist, img, click = htm.HandDetector.find_distance(img, landmark_list, finger_2=0, radius=8)
+            if click:
+                pyautogui.click(button="right")
         # Moving mode
         elif fingers_up[1]:
             mouse_x = np.interp(index_x, [MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2], [0, RESOLUTION_W])
