@@ -1,4 +1,4 @@
-# CompVision-WindowsTools
+# CompVision-DesktopAssistant
 Windows computer vision assistant built using computer vision with Python, OpenCV and Mediapipe
 <!--Collection of tools for Windows users built using computer vision with Python, OpenCV and Mediapipe-->
 
