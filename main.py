@@ -10,15 +10,18 @@ from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 import HandTrackingModule as htm  # import created hand tracking module
+from helpers import check_webcam_resolution
 
 
 # Setting Constants
 ###################################################################
+WEBCAM = 0
 RESOLUTION_W, RESOLUTION_H = pyautogui.size()
 print(f"Detected screen resolution: {RESOLUTION_W}x{RESOLUTION_H}")
 
-CAP_WIDTH, CAP_HEIGHT = 960, 540  # 1000, 750
+CAP_WIDTH, CAP_HEIGHT = 1000, 540  # 1000, 750
 # Make sure CAP_WIDTH and CAP_HEIGHT constants are supported by webcam driver, if not update them
+CAP_WIDTH, CAP_HEIGHT = check_webcam_resolution(CAP_WIDTH, CAP_HEIGHT, WEBCAM)
 VOL_BAR_X1, VOL_BAR_X2 = 15, 75  # 250, 650
 VOL_BAR_Y1, VOL_BAR_Y2 = 150, 390  # 25, 65
 MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = 150, 875
@@ -41,13 +44,9 @@ power_button_state = False
 def main():
     # Set up for video capture window
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Change which webcam is used here; 0=default webcam, 1=second webcam, etc.
-    print(f"width: {cap.get(3)}, height: {cap.get(4)}")
-
     cap.set(3, CAP_WIDTH)  # id 3 => capture window width
     cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
     detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
-
-    print(f"width: {cap.get(3)}, height: {cap.get(4)}")
 
     prev_time = 0  # set initial time for fps tracking
 
@@ -176,31 +175,6 @@ def power_button_toggle(event, x, y, flags, params):
     if event == cv2.EVENT_LBUTTONDOWN:
         if x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2):
             power_button_state = not power_button_state
-
-
-def check_webcam_resolution(desired_width, desired_height, webcam=0):
-    """
-    Checks if desired_width and desired_height are supported by webcam driver,
-    if not, prints warning msg and returns closest dimensions supported by webcam
-    """
-    cap = cv2.VideoCapture(webcam)
-
-    # Update capture window resolution
-    cap.set(3, desired_width)  # id 3 => capture window width
-    cap.set(4, desired_height)  # id 4 => capture window height
-
-    # Check resulting resolution
-    result_w, result_h = cap.get(3), cap.get(4)
-
-    if result_w != desired_width or result_h != desired_height:
-        msg = f"""
-               Desired resolution not supported by chosen webcam driver. 
-               Setting capture resolution to {result_w}x{result_h}
-               """
-        warnings.warn(msg)
-
-    return result_w, result_h
-
 
 
 if __name__ == "__main__":
