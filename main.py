@@ -15,17 +15,19 @@ from helpers import check_webcam_resolution
 
 # Setting Constants
 ###################################################################
-WEBCAM = 0
+WEBCAM = 0  # Change this variable to change which webcam is used; 0=default webcam, 1=second webcam, etc.
 RESOLUTION_W, RESOLUTION_H = pyautogui.size()
 print(f"Detected screen resolution: {RESOLUTION_W}x{RESOLUTION_H}")
 
-CAP_WIDTH, CAP_HEIGHT = 1000, 540  # 1000, 750
+CAP_WIDTH, CAP_HEIGHT = 960, 540  # 1000, 750
 # Make sure CAP_WIDTH and CAP_HEIGHT constants are supported by webcam driver, if not update them
 CAP_WIDTH, CAP_HEIGHT = check_webcam_resolution(CAP_WIDTH, CAP_HEIGHT, WEBCAM)
-VOL_BAR_X1, VOL_BAR_X2 = 15, 75  # 250, 650
-VOL_BAR_Y1, VOL_BAR_Y2 = 150, 390  # 25, 65
-MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = 150, 875
-MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2 = 35, VOL_BAR_Y2
+
+# Set other coordinate constants based on CAP_WIDTH and CAP_HEIGHT
+VOL_BAR_X1, VOL_BAR_X2 = round(CAP_WIDTH / 64), round(CAP_WIDTH * 5/64)  # 250, 650
+VOL_BAR_Y1, VOL_BAR_Y2 = round(CAP_HEIGHT * 5/18), round(CAP_HEIGHT * 13/18)  # 25, 65
+MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = round(CAP_WIDTH * 5/32), round(CAP_WIDTH * 175/192)
+MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2 = round(CAP_HEIGHT * 7/108), VOL_BAR_Y2
 POWER_BUTTON_X1, POWER_BUTTON_X2 = 0, 100
 POWER_BUTTON_Y1, POWER_BUTTON_Y2 = 0, 100
 SMOOTHING = 5  # Determines mouse movement sensitivity
@@ -43,7 +45,7 @@ power_button_state = False
 
 def main():
     # Set up for video capture window
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Change which webcam is used here; 0=default webcam, 1=second webcam, etc.
+    cap = cv2.VideoCapture(WEBCAM, cv2.CAP_DSHOW)
     cap.set(3, CAP_WIDTH)  # id 3 => capture window width
     cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
     detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
