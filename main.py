@@ -19,7 +19,7 @@ WEBCAM = 0  # Change this variable to change which webcam is used; 0=default web
 RESOLUTION_W, RESOLUTION_H = pyautogui.size()
 print(f"Detected screen resolution: {RESOLUTION_W}x{RESOLUTION_H}")
 
-CAP_WIDTH, CAP_HEIGHT = 960, 540  # 1000, 750
+CAP_WIDTH, CAP_HEIGHT = RESOLUTION_W // 2, RESOLUTION_H // 2  # 960, 540  # 1000, 750
 # Make sure CAP_WIDTH and CAP_HEIGHT constants are supported by webcam driver, if not update them
 CAP_WIDTH, CAP_HEIGHT = check_webcam_resolution(CAP_WIDTH, CAP_HEIGHT, WEBCAM)
 
@@ -53,7 +53,7 @@ def main():
     prev_time = 0  # set initial time for fps tracking
 
     power_button_img = cv2.imread(r'images\power-button.png')
-    power_button_img = cv2.resize(power_button_img, dsize=(100, 100))
+    power_button_img = cv2.resize(power_button_img, dsize=(97, 97))
 
     mouse_down = False  # When True, left mouse button is held down
     prev_mouse_x, prev_mouse_y = 0, 0  # pyautogui.position()
@@ -62,8 +62,6 @@ def main():
 
     while True:
         success, img = cap.read()
-
-        img[0:100, 0:100] = power_button_img  # Overlay power button image at top left corner of capture img
 
         if power_button_state:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 255, 0), 3)
@@ -78,6 +76,10 @@ def main():
             if landmark_list:
                 thumb_x, thumb_y = landmark_list[4][1], landmark_list[4][2]
                 index_x, index_y = landmark_list[8][1], landmark_list[8][2]
+
+                if index_x in range(0, 100) and index_y in range(0, 100):
+                    print("over power")
+
 
                 fingers_up = htm.HandDetector.fingers_up(landmark_list)
 
@@ -158,6 +160,9 @@ def main():
                         cv2.FONT_HERSHEY_COMPLEX, 1, BASE_COLOR, 2)
         else:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 0, 255), 3)
+
+
+        img[3:100, 3:100] = power_button_img  # Overlay power button image at top left corner of capture img
 
         # Displaying video frame
         cv2.imshow("Hand Gesture Controller", img)
