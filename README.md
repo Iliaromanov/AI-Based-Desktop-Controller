@@ -8,4 +8,4 @@ Windows computer vision assistant built using computer vision with Python, OpenC
   Would be super sick if you used arduino for all this shit too.
 --> 
 
-## Demo/Usage
+## Demo
