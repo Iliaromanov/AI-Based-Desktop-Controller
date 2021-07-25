@@ -3,7 +3,7 @@ import pyautogui
 import autopy
 import numpy as np
 import time
-import os
+import warnings
 
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
@@ -16,10 +16,12 @@ import HandTrackingModule as htm  # import created hand tracking module
 ###################################################################
 RESOLUTION_W, RESOLUTION_H = pyautogui.size()
 print(f"Detected screen resolution: {RESOLUTION_W}x{RESOLUTION_H}")
-CAP_WIDTH, CAP_HEIGHT = 1000, 750
+
+CAP_WIDTH, CAP_HEIGHT = 960, 540  # 1000, 750
+# Make sure CAP_WIDTH and CAP_HEIGHT constants are supported by webcam driver, if not update them
 VOL_BAR_X1, VOL_BAR_X2 = 15, 75  # 250, 650
-VOL_BAR_Y1, VOL_BAR_Y2 = 150, CAP_HEIGHT-360  # 25, 65
-MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = 150, CAP_WIDTH - 125
+VOL_BAR_Y1, VOL_BAR_Y2 = 150, 390  # 25, 65
+MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = 150, 875
 MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2 = 35, VOL_BAR_Y2
 POWER_BUTTON_X1, POWER_BUTTON_X2 = 0, 100
 POWER_BUTTON_Y1, POWER_BUTTON_Y2 = 0, 100
@@ -35,15 +37,17 @@ volume = cast(interface, POINTER(IAudioEndpointVolume))
 # When true the program is "on", when False program is off
 power_button_state = False
 
+
 def main():
     # Set up for video capture window
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # Change which webcam is used here; 0=default webcam, 1=second webcam, etc.
+    print(f"width: {cap.get(3)}, height: {cap.get(4)}")
+
     cap.set(3, CAP_WIDTH)  # id 3 => capture window width
     cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
-
     detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
 
-    prev_mouse_x, prev_mouse_y = 0, 0  # pyautogui.position()
+    print(f"width: {cap.get(3)}, height: {cap.get(4)}")
 
     prev_time = 0  # set initial time for fps tracking
 
@@ -51,11 +55,14 @@ def main():
     power_button_img = cv2.resize(power_button_img, dsize=(100, 100))
 
     mouse_down = False  # When True, left mouse button is held down
+    prev_mouse_x, prev_mouse_y = 0, 0  # pyautogui.position()
+
+    bottom_text = None  # Text at bottom of capture img to describe current action (eg. 'Using mouse')
 
     while True:
         success, img = cap.read()
 
-        img[0:100, 0:100] = power_button_img
+        img[0:100, 0:100] = power_button_img  # Overlay power button image at top left corner of capture img
 
         if power_button_state:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 255, 0), 3)
@@ -146,8 +153,8 @@ def main():
             fps = 1 / (cur_time - prev_time)
             prev_time = cur_time
             # Displaying FPS
-            cv2.putText(img, f"FPS: {int(fps)}", (VOL_BAR_X1, CAP_HEIGHT - 255), cv2.FONT_HERSHEY_COMPLEX, 1,
-                        BASE_COLOR, 2)
+            cv2.putText(img, f"FPS: {int(fps)}", (VOL_BAR_X1, 495),
+                        cv2.FONT_HERSHEY_COMPLEX, 1, BASE_COLOR, 2)
         else:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 0, 255), 3)
 
@@ -169,6 +176,31 @@ def power_button_toggle(event, x, y, flags, params):
     if event == cv2.EVENT_LBUTTONDOWN:
         if x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2):
             power_button_state = not power_button_state
+
+
+def check_webcam_resolution(desired_width, desired_height, webcam=0):
+    """
+    Checks if desired_width and desired_height are supported by webcam driver,
+    if not, prints warning msg and returns closest dimensions supported by webcam
+    """
+    cap = cv2.VideoCapture(webcam)
+
+    # Update capture window resolution
+    cap.set(3, desired_width)  # id 3 => capture window width
+    cap.set(4, desired_height)  # id 4 => capture window height
+
+    # Check resulting resolution
+    result_w, result_h = cap.get(3), cap.get(4)
+
+    if result_w != desired_width or result_h != desired_height:
+        msg = f"""
+               Desired resolution not supported by chosen webcam driver. 
+               Setting capture resolution to {result_w}x{result_h}
+               """
+        warnings.warn(msg)
+
+    return result_w, result_h
+
 
 
 if __name__ == "__main__":
