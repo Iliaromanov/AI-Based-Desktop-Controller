@@ -167,7 +167,8 @@ def main():
             landmark_list = detector.find_positions(img)
             if landmark_list:
                 index_x, index_y = landmark_list[8][1], landmark_list[8][2]
-                if index_x in range(3, 100) and index_y in range(3, 100):
+                if index_x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and \
+                   index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2):
                     print("toggle power button")
                     power_button_state = not power_button_state
 
