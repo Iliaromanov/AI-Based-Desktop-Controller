@@ -42,19 +42,21 @@ class HandDetector:
         height, width, channels = img.shape  # get frames dimensions and channels
 
         landmark_positions = []
+        handedness = None
 
         if self.results.multi_hand_landmarks:
             # Ensure there are enough detected hands to retrieve specified lm positions
             if hand_num != 0 and len(self.results.multi_hand_landmarks) <= 1:
-                return []
+                return [], None
 
+            handedness = self.results.multi_handedness[hand_num].classification[0].label
             hand = self.results.multi_hand_landmarks[hand_num]  # Get landmarks for specified hand
 
             for id, lm in enumerate(hand.landmark):
                 x_pos, y_pos = int(lm.x * width), int(lm.y * height)
                 landmark_positions.append((id, x_pos, y_pos))
 
-        return landmark_positions
+        return landmark_positions, handedness
 
     @classmethod
     def fingers_up(cls, lm_positions):
