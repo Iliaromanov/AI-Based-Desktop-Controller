@@ -44,6 +44,8 @@ power_button_state = False
 
 
 def main():
+    global power_button_state
+
     # Set up for video capture window
     cap = cv2.VideoCapture(WEBCAM, cv2.CAP_DSHOW)
     cap.set(3, CAP_WIDTH)  # id 3 => capture window width
@@ -74,12 +76,7 @@ def main():
             volume_bar_y = VOL_BAR_Y2 - round((VOL_BAR_Y2 - VOL_BAR_Y1) * vol_percent)
 
             if landmark_list:
-                thumb_x, thumb_y = landmark_list[4][1], landmark_list[4][2]
                 index_x, index_y = landmark_list[8][1], landmark_list[8][2]
-
-                if index_x in range(0, 100) and index_y in range(0, 100):
-                    print("over power")
-
 
                 fingers_up = htm.HandDetector.fingers_up(landmark_list)
 
@@ -108,9 +105,15 @@ def main():
                     # Mouse motion
                     elif fingers_up[1]:
                         new_mouse_x = np.interp(index_x, [MOUSE_CTRL_WINDOW_X1,
-                                                          MOUSE_CTRL_WINDOW_X2], [0, RESOLUTION_W])
+                                                          MOUSE_CTRL_WINDOW_X2], [-45, RESOLUTION_W + 45])
                         new_mouse_y = np.interp(index_y, [MOUSE_CTRL_WINDOW_Y1,
-                                                          MOUSE_CTRL_WINDOW_Y2], [0, RESOLUTION_H])
+                                                          MOUSE_CTRL_WINDOW_Y2], [-45, RESOLUTION_H + 45])
+
+                        new_mouse_x = RESOLUTION_W if new_mouse_x > RESOLUTION_W else new_mouse_x
+                        new_mouse_y = RESOLUTION_H if new_mouse_y > RESOLUTION_H else new_mouse_y
+                        new_mouse_x = 0 if new_mouse_x < 0 else new_mouse_x
+                        new_mouse_y = 0 if new_mouse_y < 0 else new_mouse_y
+
 
                         mouse_x = prev_mouse_x + (new_mouse_x - prev_mouse_x) / SMOOTHING
                         mouse_y = prev_mouse_y + (new_mouse_y - prev_mouse_y) / SMOOTHING
@@ -161,6 +164,13 @@ def main():
         else:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 0, 255), 3)
 
+            detector.find_hands(img, draw=False)
+            landmark_list = detector.find_positions(img)
+            if landmark_list:
+                index_x, index_y = landmark_list[8][1], landmark_list[8][2]
+                if index_x in range(3, 100) and index_y in range(3, 100):
+                    print("toggle power button")
+                    power_button_state = not power_button_state
 
         img[3:100, 3:100] = power_button_img  # Overlay power button image at top left corner of capture img
 
