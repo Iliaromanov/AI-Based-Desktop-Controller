@@ -44,6 +44,10 @@ class HandDetector:
         landmark_positions = []
 
         if self.results.multi_hand_landmarks:
+            # Ensure there are enough detected hands to retrieve specified lm positions
+            if hand_num != 0 and len(self.results.multi_hand_landmarks) <= 1:
+                return []
+
             hand = self.results.multi_hand_landmarks[hand_num]  # Get landmarks for specified hand
 
             for id, lm in enumerate(hand.landmark):
