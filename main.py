@@ -10,7 +10,7 @@ from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 import HandTrackingModule as htm  # import created hand tracking module
-from utils import check_webcam_resolution
+from utils import check_webcam_resolution, speech_to_text
 
 
 # Setting Constants
@@ -32,10 +32,6 @@ POWER_BUTTON_X1, POWER_BUTTON_X2 = 0, round(CAP_WIDTH * 5/72)
 POWER_BUTTON_Y1, POWER_BUTTON_Y2 = 0, round(CAP_HEIGHT * 10/81)
 MIC_BUTTON_X1, MIC_BUTTON_X2 = POWER_BUTTON_X2, POWER_BUTTON_X2 * 2
 MIC_BUTTON_Y1, MIC_BUTTON_Y2 = POWER_BUTTON_Y1, POWER_BUTTON_Y2
-
-
-print(MIC_BUTTON_X1, MIC_BUTTON_X2, MIC_BUTTON_Y1, MIC_BUTTON_Y2)
-
 SMOOTHING = 5  # Determines mouse movement sensitivity
 BASE_COLOR = (250, 0, 0)
 
@@ -60,6 +56,7 @@ def main():
 
     prev_time = 0  # set initial time for fps tracking
     prev_power_toggle_time = 0
+    prev_mic_toggle_time = 0
 
     power_button_img = cv2.imread(r'images\power-button.png')
     power_button_img = cv2.resize(power_button_img, dsize=(POWER_BUTTON_X2-3, POWER_BUTTON_Y2-3))
@@ -75,6 +72,9 @@ def main():
     while True:
         success, img = cap.read()
         img = cv2.flip(img, 1)
+
+        # Draw microphone button red outline
+        cv2.rectangle(img, (MIC_BUTTON_X1, MIC_BUTTON_Y1), (MIC_BUTTON_X2, MIC_BUTTON_Y2), (0, 0, 255), 3)
 
         if power_button_state:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 255, 0), 3)
@@ -160,6 +160,15 @@ def main():
                     print("toggle power button")
                     prev_power_toggle_time = time.time()
                     power_button_state = not power_button_state
+
+                if index_x in range(MIC_BUTTON_X1, MIC_BUTTON_X2) and \
+                        index_y in range(MIC_BUTTON_Y1, MIC_BUTTON_Y2) and \
+                        (time.time() - prev_mic_toggle_time) >= 1:
+                    print("toggle mic button")
+                    cv2.rectangle(img, (MIC_BUTTON_X1, MIC_BUTTON_Y1), (MIC_BUTTON_X2, MIC_BUTTON_X2), (0, 255, 0), 3)
+                    text = speech_to_text()
+                    autopy.key.type_string(text)
+                    prev_mic_toggle_time = time.time()
 
             # # Drawing Horizontal volume control bar
             # cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), BASE_COLOR, 1)
