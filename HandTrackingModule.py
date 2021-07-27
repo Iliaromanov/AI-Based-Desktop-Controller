@@ -59,7 +59,7 @@ class HandDetector:
         return landmark_positions, handedness
 
     @classmethod
-    def fingers_up(cls, lm_positions):
+    def fingers_up(cls, lm_positions, handedness):
         """
         Detects which fingers are up and returns a list of length 5,
         one value for each finger; 0 = finger down, 1 = finger up
@@ -67,7 +67,10 @@ class HandDetector:
         result = []
 
         # Special case for thumb
-        result.append(1) if lm_positions[4][1] > lm_positions[3][1] else result.append(0)
+        if handedness == "Left":
+            result.append(1) if lm_positions[4][1] > lm_positions[3][1] else result.append(0)
+        else:
+            result.append(1) if lm_positions[4][1] < lm_positions[3][1] else result.append(0)
 
         # Check rest of the fingers
         for id in cls.finger_tip_ids[1:]:
