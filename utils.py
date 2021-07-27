@@ -1,4 +1,5 @@
 import cv2
+import speech_recognition as sr
 import warnings
 
 
@@ -22,3 +23,19 @@ def check_webcam_resolution(desired_width, desired_height, webcam=0):
         print(msg)
 
     return result_w, result_h
+
+
+def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
+    '''
+    Listens to audio input from microphone and returns text string recognized
+    by google
+    '''
+    r = sr.Recognizer()
+
+    with sr.Microphone() as source:
+        print("listening")
+        audio_text = r.listen(source, timeout=start_listen_timeout, phrase_time_limit=listen_time_limit)
+        print("finished listening")
+        result = r.recognize_google(audio_text)
+
+        return result

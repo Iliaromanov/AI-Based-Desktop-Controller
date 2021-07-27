@@ -10,7 +10,7 @@ from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 import HandTrackingModule as htm  # import created hand tracking module
-from helpers import check_webcam_resolution
+from utils import check_webcam_resolution
 
 
 # Setting Constants
