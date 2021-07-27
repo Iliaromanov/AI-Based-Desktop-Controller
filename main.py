@@ -50,9 +50,10 @@ def main():
     cap = cv2.VideoCapture(WEBCAM, cv2.CAP_DSHOW)
     cap.set(3, CAP_WIDTH)  # id 3 => capture window width
     cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
-    detector = htm.HandDetector(max_num_hands=2, min_detection_confidence=0.8)
+    detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.9)
 
     prev_time = 0  # set initial time for fps tracking
+    prev_power_toggle_time = 0
 
     power_button_img = cv2.imread(r'images\power-button.png')
     power_button_img = cv2.resize(power_button_img, dsize=(POWER_BUTTON_X2-3, POWER_BUTTON_Y2-3))
@@ -64,21 +65,30 @@ def main():
 
     while True:
         success, img = cap.read()
+        img = cv2.flip(img, 1)
 
         if power_button_state:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 255, 0), 3)
             img = detector.find_hands(img)
-            landmark_list = detector.find_positions(img)
+            hand1_landmarks, hand1_type = detector.find_positions(img, hand_num=0)
+            hand2_landmarks, hand2_type = detector.find_positions(img, hand_num=1)
+
+            # Force the mouse controlling hand to be the right hand when possible
+            if hand1_type and hand2_type:
+                print("Two hands")
+                if hand1_type == "Left":
+                    hand1_landmarks, hand2_landmarks = hand2_landmarks, hand1_landmarks
+                    hand1_type, hand2_type = hand2_type, hand1_type
 
             vol_percent = volume.GetMasterVolumeLevelScalar()
 
             #volume_bar_x = VOL_BAR_X1 + round((VOL_BAR_X2 - VOL_BAR_X1) * vol_percent)
             volume_bar_y = VOL_BAR_Y2 - round((VOL_BAR_Y2 - VOL_BAR_Y1) * vol_percent)
 
-            if landmark_list:
-                index_x, index_y = landmark_list[8][1], landmark_list[8][2]
+            if hand1_landmarks:
+                index_x, index_y = hand1_landmarks[8][1], hand1_landmarks[8][2]
 
-                fingers_up = htm.HandDetector.fingers_up(landmark_list)
+                fingers_up = htm.HandDetector.fingers_up(hand1_landmarks, hand1_type)
 
                 # Stop holding down left mouse when condition not met
                 if not (fingers_up[1] and fingers_up[4]) and mouse_down:
@@ -93,12 +103,12 @@ def main():
 
                     # Left click
                     if fingers_up[1] and fingers_up[2]:
-                        dist, img, click = htm.HandDetector.find_distance(img, landmark_list, radius=8)
+                        dist, img, click = htm.HandDetector.find_distance(img, hand1_landmarks, radius=8)
                         if click:
                             autopy.mouse.click()
                     # Right click
                     elif fingers_up[1] and fingers_up[0]:
-                        dist, img, click = htm.HandDetector.find_distance(img, landmark_list, finger_2=0, radius=8)
+                        dist, img, click = htm.HandDetector.find_distance(img, hand1_landmarks, finger_2=0, radius=8)
                         if click:
                             # pyautogui.click(button="right")
                             autopy.mouse.click(autopy.mouse.Button.RIGHT)
@@ -135,6 +145,13 @@ def main():
                     vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1)
                     volume.SetMasterVolumeLevelScalar(vol_percent, None)
 
+                if index_x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and \
+                        index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
+                        (time.time() - prev_power_toggle_time) >= 1:
+                    print("toggle power button")
+                    prev_power_toggle_time = time.time()
+                    power_button_state = not power_button_state
+
             # # Drawing Horizontal volume control bar
             # cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), BASE_COLOR, 1)
             # cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (volume_bar_x, VOL_BAR_Y2), BASE_COLOR, cv2.FILLED)
@@ -164,12 +181,14 @@ def main():
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 0, 255), 3)
 
             detector.find_hands(img, draw=False)
-            landmark_list = detector.find_positions(img)
-            if landmark_list:
-                index_x, index_y = landmark_list[8][1], landmark_list[8][2]
+            hand1_landmarks, _ = detector.find_positions(img)
+            if hand1_landmarks:
+                index_x, index_y = hand1_landmarks[8][1], hand1_landmarks[8][2]
                 if index_x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and \
-                   index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2):
+                   index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
+                   (time.time() - prev_power_toggle_time) >= 1:
                     print("toggle power button")
+                    prev_power_toggle_time = time.time()
                     power_button_state = not power_button_state
 
         # Overlay power button image at top left corner of capture img
