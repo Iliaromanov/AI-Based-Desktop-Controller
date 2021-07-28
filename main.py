@@ -52,7 +52,7 @@ def main():
     cap = cv2.VideoCapture(WEBCAM, cv2.CAP_DSHOW)
     cap.set(3, CAP_WIDTH)  # id 3 => capture window width
     cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
-    detector = htm.HandDetector(max_num_hands=2, min_detection_confidence=0.9)
+    detector = htm.HandDetector(max_num_hands=2, min_detection_confidence=0.8)
 
     prev_time = 0  # set initial time for fps tracking
     prev_power_toggle_time = 0
@@ -143,6 +143,12 @@ def main():
                         if fingers_up[4] and not mouse_down:
                             mouse_down = not mouse_down
                             autopy.mouse.toggle(down=mouse_down)
+                    # Activating speech to text
+                    if fingers_up == [1, 0, 0, 0, 1] and (time.time() - prev_mic_toggle_time) >= 1:
+                        print("toggle mic button")
+                        text = speech_to_text()
+                        autopy.key.type_string(text)
+                        prev_mic_toggle_time = time.time()
 
                 if index_x in range(VOL_BAR_X1, VOL_BAR_X2) and \
                    index_y in range(VOL_BAR_Y1, VOL_BAR_Y2) and fingers_up[1]:
@@ -161,14 +167,14 @@ def main():
                     prev_power_toggle_time = time.time()
                     power_button_state = not power_button_state
 
-                if index_x in range(MIC_BUTTON_X1, MIC_BUTTON_X2) and \
-                        index_y in range(MIC_BUTTON_Y1, MIC_BUTTON_Y2) and \
-                        (time.time() - prev_mic_toggle_time) >= 1:
-                    print("toggle mic button")
-                    cv2.rectangle(img, (MIC_BUTTON_X1, MIC_BUTTON_Y1), (MIC_BUTTON_X2, MIC_BUTTON_X2), (0, 255, 0), 3)
-                    text = speech_to_text()
-                    autopy.key.type_string(text)
-                    prev_mic_toggle_time = time.time()
+                # if index_x in range(MIC_BUTTON_X1, MIC_BUTTON_X2) and \
+                #         index_y in range(MIC_BUTTON_Y1, MIC_BUTTON_Y2) and \
+                #         (time.time() - prev_mic_toggle_time) >= 1:
+                #     print("toggle mic button")
+                #     cv2.rectangle(img, (MIC_BUTTON_X1, MIC_BUTTON_Y1), (MIC_BUTTON_X2, MIC_BUTTON_X2), (0, 255, 0), 3)
+                #     text = speech_to_text()
+                #     autopy.key.type_string(text)
+                #     prev_mic_toggle_time = time.time()
 
             # # Drawing Horizontal volume control bar
             # cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), BASE_COLOR, 1)
