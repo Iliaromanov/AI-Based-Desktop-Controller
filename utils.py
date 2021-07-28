@@ -33,9 +33,13 @@ def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
     r = sr.Recognizer()
 
     with sr.Microphone() as source:
-        print("listening")
-        audio_text = r.listen(source, timeout=start_listen_timeout, phrase_time_limit=listen_time_limit)
-        print("finished listening")
-        result = r.recognize_google(audio_text)
+        try:
+            print("listening")
+            audio_text = r.listen(source, timeout=start_listen_timeout, phrase_time_limit=listen_time_limit)
+            print("finished listening")
+            result = r.recognize_google(audio_text)
+        except Exception as err:
+            print(err)
+            return ""
 
         return result
