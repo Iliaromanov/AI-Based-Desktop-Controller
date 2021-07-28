@@ -28,8 +28,8 @@ VOL_BAR_X1, VOL_BAR_X2 = round(CAP_WIDTH / 64), round(CAP_WIDTH * 5/64)  # 250, 
 VOL_BAR_Y1, VOL_BAR_Y2 = round(CAP_HEIGHT * 5/18), round(CAP_HEIGHT * 13/18)  # 25, 65
 MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = round(CAP_WIDTH * 5/32), round(CAP_WIDTH * 175/192)
 MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2 = round(CAP_HEIGHT * 7/108), VOL_BAR_Y2
-POWER_BUTTON_X1, POWER_BUTTON_X2 = 0, round(CAP_WIDTH * 5/72)
-POWER_BUTTON_Y1, POWER_BUTTON_Y2 = 0, round(CAP_HEIGHT * 10/81)
+POWER_BUTTON_X1, POWER_BUTTON_X2 = 0, round(CAP_WIDTH * 5/48)
+POWER_BUTTON_Y1, POWER_BUTTON_Y2 = 0, round(CAP_HEIGHT * 5/27)
 MIC_BUTTON_X1, MIC_BUTTON_X2 = POWER_BUTTON_X2, POWER_BUTTON_X2 * 2
 MIC_BUTTON_Y1, MIC_BUTTON_Y2 = POWER_BUTTON_Y1, POWER_BUTTON_Y2
 SMOOTHING = 5  # Determines mouse movement sensitivity
@@ -52,7 +52,7 @@ def main():
     cap = cv2.VideoCapture(WEBCAM, cv2.CAP_DSHOW)
     cap.set(3, CAP_WIDTH)  # id 3 => capture window width
     cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
-    detector = htm.HandDetector(max_num_hands=2, min_detection_confidence=0.8)
+    detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
 
     prev_time = 0  # set initial time for fps tracking
     prev_power_toggle_time = 0
@@ -61,8 +61,8 @@ def main():
     power_button_img = cv2.imread(r'images\power-button.png')
     power_button_img = cv2.resize(power_button_img, dsize=(POWER_BUTTON_X2-3, POWER_BUTTON_Y2-3))
 
-    mic_button_img = cv2.imread(r'images\microphone-button.png')
-    mic_button_img = cv2.resize(mic_button_img, dsize=(MIC_BUTTON_X2-MIC_BUTTON_X1-3, MIC_BUTTON_Y2-3))
+    # mic_button_img = cv2.imread(r'images\microphone-button.png')
+    # mic_button_img = cv2.resize(mic_button_img, dsize=(MIC_BUTTON_X2-MIC_BUTTON_X1-3, MIC_BUTTON_Y2-3))
 
     mouse_down = False  # When True, left mouse button is held down
     prev_mouse_x, prev_mouse_y = 0, 0  # pyautogui.position()
@@ -74,7 +74,7 @@ def main():
         img = cv2.flip(img, 1)
 
         # Draw microphone button red outline
-        cv2.rectangle(img, (MIC_BUTTON_X1, MIC_BUTTON_Y1), (MIC_BUTTON_X2, MIC_BUTTON_Y2), (0, 0, 255), 3)
+        # cv2.rectangle(img, (MIC_BUTTON_X1, MIC_BUTTON_Y1), (MIC_BUTTON_X2, MIC_BUTTON_Y2), (0, 0, 255), 3)
 
         if power_button_state:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 255, 0), 3)
@@ -217,8 +217,8 @@ def main():
 
         # Display power button
         img[POWER_BUTTON_Y1+3:POWER_BUTTON_Y2, POWER_BUTTON_X1+3:POWER_BUTTON_X2] = power_button_img
-        # Display microphone button
-        img[MIC_BUTTON_Y1 + 3:MIC_BUTTON_Y2, MIC_BUTTON_X1 + 3:MIC_BUTTON_X2] = mic_button_img
+        # # Display microphone button
+        # img[MIC_BUTTON_Y1 + 3:MIC_BUTTON_Y2, MIC_BUTTON_X1 + 3:MIC_BUTTON_X2] = mic_button_img
 
         # Displaying video frame
         cv2.imshow("Hand Gesture Controller", img)
