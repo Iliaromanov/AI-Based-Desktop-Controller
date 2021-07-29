@@ -1,6 +1,8 @@
 import cv2
 import pyautogui
 import autopy
+from pydub import AudioSegment
+from pydub.playback import play
 import numpy as np
 import time
 import warnings
@@ -78,7 +80,7 @@ def main():
 
         if power_button_state:
             cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2), (0, 255, 0), 3)
-            img = detector.find_hands(img)
+            detector.find_hands(img)
             hand1_landmarks, hand1_type = detector.find_positions(img, hand_num=0)
             hand2_landmarks, hand2_type = detector.find_positions(img, hand_num=1)
 
@@ -167,6 +169,9 @@ def main():
                     prev_power_toggle_time = time.time()
                     power_button_state = not power_button_state
 
+                    sound = AudioSegment.from_wav('sounds/power-toggle.wav')
+                    play(sound)
+
                 # if index_x in range(MIC_BUTTON_X1, MIC_BUTTON_X2) and \
                 #         index_y in range(MIC_BUTTON_Y1, MIC_BUTTON_Y2) and \
                 #         (time.time() - prev_mic_toggle_time) >= 1:
@@ -214,6 +219,9 @@ def main():
                     print("toggle power button")
                     prev_power_toggle_time = time.time()
                     power_button_state = not power_button_state
+
+                    sound = AudioSegment.from_wav('sounds/power-toggle.wav')
+                    play(sound)
 
         # Display power button
         img[POWER_BUTTON_Y1+3:POWER_BUTTON_Y2, POWER_BUTTON_X1+3:POWER_BUTTON_X2] = power_button_img
