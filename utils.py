@@ -2,6 +2,8 @@ import cv2
 import speech_recognition as sr
 import warnings
 
+from pydub import AudioSegment
+from pydub.playback import play
 
 def check_webcam_resolution(desired_width, desired_height, webcam=0):
     """
@@ -28,7 +30,7 @@ def check_webcam_resolution(desired_width, desired_height, webcam=0):
 def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
     '''
     Listens to audio input from microphone and returns text string recognized
-    by google
+    by google speech recognition api
     '''
     r = sr.Recognizer()
 
@@ -43,3 +45,12 @@ def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
             return ""
 
         return result
+
+
+def play_power_toggle_sound():
+    """
+    Uses pydub to play power-toggle.wav sound (function defined for threading purposes)
+    :return:
+    """
+    sound = AudioSegment.from_wav('sounds/power-toggle.wav')
+    play(sound)

@@ -1,18 +1,17 @@
 import cv2
 import pyautogui
 import autopy
-from pydub import AudioSegment
-from pydub.playback import play
 import numpy as np
 import time
 import warnings
+from concurrent.futures import ThreadPoolExecutor
 
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 import HandTrackingModule as htm  # import created hand tracking module
-from utils import check_webcam_resolution, speech_to_text
+from utils import check_webcam_resolution, speech_to_text, play_power_toggle_sound
 
 
 # Setting Constants
@@ -46,6 +45,8 @@ volume = cast(interface, POINTER(IAudioEndpointVolume))
 # When true the program is "on", when False program is off
 power_button_state = False
 
+executor = ThreadPoolExecutor()
+
 
 def main():
     global power_button_state
@@ -54,7 +55,7 @@ def main():
     cap = cv2.VideoCapture(WEBCAM, cv2.CAP_DSHOW)
     cap.set(3, CAP_WIDTH)  # id 3 => capture window width
     cap.set(4, CAP_HEIGHT)  # id 4 => capture window height
-    detector = htm.HandDetector(max_num_hands=1, min_detection_confidence=0.8)
+    detector = htm.HandDetector(max_num_hands=2, min_detection_confidence=0.8)
 
     prev_time = 0  # set initial time for fps tracking
     prev_power_toggle_time = 0
@@ -70,6 +71,7 @@ def main():
     prev_mouse_x, prev_mouse_y = 0, 0  # pyautogui.position()
 
     bottom_text = None  # Text at bottom of capture img to describe current action (eg. 'Using mouse')
+
 
     while True:
         success, img = cap.read()
@@ -166,11 +168,11 @@ def main():
                         index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
                         (time.time() - prev_power_toggle_time) >= 1:
                     print("toggle power button")
+                    executor.submit(play_power_toggle_sound)
                     prev_power_toggle_time = time.time()
                     power_button_state = not power_button_state
 
-                    sound = AudioSegment.from_wav('sounds/power-toggle.wav')
-                    play(sound)
+
 
                 # if index_x in range(MIC_BUTTON_X1, MIC_BUTTON_X2) and \
                 #         index_y in range(MIC_BUTTON_Y1, MIC_BUTTON_Y2) and \
@@ -193,7 +195,7 @@ def main():
 
             # Displaying Volume Level Percentage
             cv2.putText(img, f"{round(vol_percent * 100)}%", (VOL_BAR_X1, VOL_BAR_Y1 - 10),
-                        cv2.FONT_HERSHEY_COMPLEX, 1, BASE_COLOR, 2)
+                        cv2.FONT_HERSHEY_COMPLEX, CAP_HEIGHT / 540, BASE_COLOR, 2)
 
             # Drawing mouse controller box
             cv2.rectangle(img, (MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_Y1),
@@ -217,16 +219,13 @@ def main():
                    index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
                    (time.time() - prev_power_toggle_time) >= 1:
                     print("toggle power button")
-                    prev_power_toggle_time = time.time()
                     power_button_state = not power_button_state
 
-                    sound = AudioSegment.from_wav('sounds/power-toggle.wav')
-                    play(sound)
+                    executor.submit(play_power_toggle_sound)
+                    prev_power_toggle_time = time.time()
 
         # Display power button
         img[POWER_BUTTON_Y1+3:POWER_BUTTON_Y2, POWER_BUTTON_X1+3:POWER_BUTTON_X2] = power_button_img
-        # # Display microphone button
-        # img[MIC_BUTTON_Y1 + 3:MIC_BUTTON_Y2, MIC_BUTTON_X1 + 3:MIC_BUTTON_X2] = mic_button_img
 
         # Displaying video frame
         cv2.imshow("Hand Gesture Controller", img)
@@ -245,6 +244,7 @@ def power_button_toggle(event, x, y, flags, params):
 
     if event == cv2.EVENT_LBUTTONDOWN:
         if x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2):
+            executor.submit(play_power_toggle_sound)
             power_button_state = not power_button_state
 
 
