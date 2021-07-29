@@ -22,18 +22,47 @@ class HandDetector:
                                         self.min_detection_confidence, self.min_tracking_confidence)
         self.mpDraw = mp.solutions.drawing_utils
 
+        self.last_detection_change = 0
+        self.old_hands = None
+
+        self.results = None
+
+
+    '''maybe do the euclidean distance check with a decorator, like in the Opta microservices process_request_array check'''
     def find_hands(self, img, draw=True):
         """
         Detects hands in given img and optionally highlights the detected landmarks
         """
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert frame img to RGB
+
+        # Euclidean distance check to ensure one hand is not mis-identified as two hands
+        if self.max_num_hands == 2:
+            temp_result = self.hands.process(img_rgb).multi_hand_landmarks
+            if temp_result and len(temp_result) > 1:
+                # Get euclidean distance between the two hands x and y coordinate arrays
+                lm_hand_0_x = np.array([lm.x for lm in temp_result[0].landmark])
+                lm_hand_1_x = np.array([lm.x for lm in temp_result[1].landmark])
+                dist_between_lms_x = np.linalg.norm(lm_hand_0_x - lm_hand_1_x)
+
+                # lm_hand_0_y = np.array([lm.y for lm in temp_result.multi_hand_landmarks[0].landmark])
+                # lm_hand_1_y = np.array([lm.y for lm in temp_result.multi_hand_landmarks[1].landmark])
+                # dist_between_lms_y = np.linalg.norm(lm_hand_0_y - lm_hand_1_y)
+
+                if dist_between_lms_x < 0.1:
+                    print("change to one hand")
+                    self.old_hands = self.hands
+                    self.last_detection_change = time.time()
+                    self.hands = self.mpHands.Hands(self.mode, 1, self.min_detection_confidence,
+                                                    self.min_tracking_confidence)
+
         self.results = self.hands.process(img_rgb)
+        if self.old_hands and time.time() - self.last_detection_change >= 3:
+            self.hands = self.old_hands
 
         if self.results.multi_hand_landmarks:
             for hand_landmarks in self.results.multi_hand_landmarks:
                 if draw:
                     self.mpDraw.draw_landmarks(img, hand_landmarks, self.mpHands.HAND_CONNECTIONS)
-        return img
 
     def find_positions(self, img, hand_num=0):
         """
@@ -129,8 +158,6 @@ def main():
         img = detector.find_hands(img)
 
         lm_list = detector.find_positions(img)
-        if len(lm_list) > 0:
-            print(lm_list[8])  # 8 = index finger tip
 
         # Calculate frame rate
         c_time = time.time()
