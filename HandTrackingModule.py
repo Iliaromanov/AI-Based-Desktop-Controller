@@ -5,10 +5,10 @@ import time
 import numpy as np
 
 class HandDetector:
-    finger_tip_ids = [4, 8, 12, 16, 20]
+    finger_tip_ids = [4, 8, 12, 16, 20]  # landmark IDs for finger tips [thumb, index, middle, ring, pinky]
 
     def __init__(self, mode=False, max_num_hands=2,
-                 min_detection_confidence=0.5, min_tracking_confidence=0.5):
+                 min_detection_confidence=0.5, min_tracking_confidence=0.5, max_miscalculations=5):
         """
         Initializing attributes
         """
@@ -22,13 +22,15 @@ class HandDetector:
                                         self.min_detection_confidence, self.min_tracking_confidence)
         self.mpDraw = mp.solutions.drawing_utils
 
+        # number of times 2 hands are wrongfully detected before permanently changing to one hand mode
+        # (may change to 'before cool off time is incremented')
+        self.max_miscalculations = max_miscalculations
+        self.miscalculation_count = 0
         self.last_detection_change = 0
         self.old_hands = None
 
         self.results = None
 
-
-    '''maybe do the euclidean distance check with a decorator, like in the Opta microservices process_request_array check'''
     def find_hands(self, img, draw=True):
         """
         Detects hands in given img and optionally highlights the detected landmarks
@@ -44,19 +46,19 @@ class HandDetector:
                 lm_hand_1_x = np.array([lm.x for lm in temp_result[1].landmark])
                 dist_between_lms_x = np.linalg.norm(lm_hand_0_x - lm_hand_1_x)
 
-                # lm_hand_0_y = np.array([lm.y for lm in temp_result.multi_hand_landmarks[0].landmark])
-                # lm_hand_1_y = np.array([lm.y for lm in temp_result.multi_hand_landmarks[1].landmark])
-                # dist_between_lms_y = np.linalg.norm(lm_hand_0_y - lm_hand_1_y)
-
                 if dist_between_lms_x < 0.1:
                     print("change to one hand")
+                    self.miscalculation_count += 1
                     self.old_hands = self.hands
                     self.last_detection_change = time.time()
                     self.hands = self.mpHands.Hands(self.mode, 1, self.min_detection_confidence,
                                                     self.min_tracking_confidence)
 
         self.results = self.hands.process(img_rgb)
-        if self.old_hands and time.time() - self.last_detection_change >= 3:
+
+        # Reset to 2 hand detection if miscalculated and if still allowed by max_miscalculations
+        if self.old_hands and time.time() - self.last_detection_change >= 3 and \
+           self.miscalculation_count < self.max_miscalculations:
             self.hands = self.old_hands
 
         if self.results.multi_hand_landmarks:
@@ -111,17 +113,6 @@ class HandDetector:
     def find_distance(cls, img, lm_positions, finger_1=1, finger_2=2, draw=True, radius=10, thickness=3, click_dist=20):
         """
         Finds the distance between two specified finger tips, and optionally draws a line between them
-
-        Params:
-            img:
-            lm_positions:
-            finger_1:
-            finger_2:
-            draw:
-            radius:
-            thickness:
-        Returns:
-            distance, img,
         """
         x1, y1 = lm_positions[cls.finger_tip_ids[finger_1]][1:]
         x2, y2 = lm_positions[cls.finger_tip_ids[finger_2]][1:]
@@ -129,17 +120,17 @@ class HandDetector:
 
         dist = np.hypot((x1-x2), (y1-y2))
 
-        if draw:
+        click = False
+
+        if draw and abs(y1 - y2) < 30:
             cv2.circle(img, (x1, y1), radius, (255, 0, 0), cv2.FILLED)
             cv2.circle(img, (x2, y2), radius, (255, 0, 0), cv2.FILLED)
+            cv2.circle(img, (center_x, center_y), radius, (255, 0, 0), cv2.FILLED)
             cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), thickness)
 
             if dist <= click_dist:
                 cv2.circle(img, (center_x, center_y), radius, (0, 255, 0), cv2.FILLED)
                 click = True
-            else:
-                cv2.circle(img, (center_x, center_y), radius, (255, 0, 0), cv2.FILLED)
-                click = False
 
         return dist, img, click
 
