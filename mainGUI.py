@@ -72,9 +72,6 @@ class VideoFeedWindowWorker(QThread):
     ImageUpdate = pyqtSignal(QImage)
 
     def run(self):
-        # When true the program is "on", when False program is off
-        self.power_button_state = False
-
         # Set up for video capture window
         cap = cv2.VideoCapture(WEBCAM, cv2.CAP_DSHOW)
         cap.set(3, CAP_WIDTH)  # id 3 => capture window width
@@ -82,14 +79,15 @@ class VideoFeedWindowWorker(QThread):
         detector = htm.HandDetector(max_num_hands=2, min_detection_confidence=0.8)
 
         prev_time = 0  # set initial time for fps tracking
-        prev_power_toggle_time = 0
         prev_mic_toggle_time = 0
 
         power_button_img = cv2.imread(r'images\power-button.png')
         power_button_img = cv2.resize(power_button_img, dsize=(POWER_BUTTON_X2 - 3, POWER_BUTTON_Y2 - 3))
 
+        self.power_button_state = False  # When true the controls are "on", when False controls are "off"
+        self.prev_power_toggle_time = 0
         self.mouse_down = False  # When True, left mouse button is held down
-        self.prev_mouse_x, self.prev_mouse_y = 0, 0  # pyautogui.position()
+        self.prev_mouse_x, self.prev_mouse_y = 0, 0
 
         while True:
             success, img = cap.read()
@@ -110,12 +108,10 @@ class VideoFeedWindowWorker(QThread):
                         hand1_type, hand2_type = hand2_type, hand1_type
 
                 vol_percent = volume.GetMasterVolumeLevelScalar()
-
                 volume_bar_y = VOL_BAR_Y2 - round((VOL_BAR_Y2 - VOL_BAR_Y1) * vol_percent)
 
                 if hand1_landmarks:
                     index_x, index_y = hand1_landmarks[8][1], hand1_landmarks[8][2]
-
                     fingers_up = htm.HandDetector.fingers_up(hand1_landmarks, hand1_type)
 
                     if index_x in range(MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2) and \
@@ -126,7 +122,7 @@ class VideoFeedWindowWorker(QThread):
 
                     # Activating speech to text
                     if fingers_up == [1, 0, 0, 0, 1] and (time.time() - prev_mic_toggle_time) >= 1:
-                        print("toggle mic button")
+                        print("toggle speech to text")
                         text = speech_to_text()
                         autopy.key.type_string(text)
                         prev_mic_toggle_time = time.time()
@@ -135,13 +131,7 @@ class VideoFeedWindowWorker(QThread):
                             index_y in range(VOL_BAR_Y1, VOL_BAR_Y2) and fingers_up[1]:
                         self.change_volume(img, index_y)
 
-                    if index_x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and \
-                            index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
-                            (time.time() - prev_power_toggle_time) >= 1:
-                        print("toggle power button")
-                        executor.submit(play_power_toggle_sound)
-                        prev_power_toggle_time = time.time()
-                        self.power_button_state = not self.power_button_state
+                    self.check_toggle_power_button(index_x, index_y)
 
                 # Vertical volume bar
                 cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), BASE_COLOR, 1)
@@ -171,14 +161,7 @@ class VideoFeedWindowWorker(QThread):
                 hand1_landmarks, _ = detector.find_positions(img)
                 if hand1_landmarks:
                     index_x, index_y = hand1_landmarks[8][1], hand1_landmarks[8][2]
-                    if index_x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and \
-                            index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
-                            (time.time() - prev_power_toggle_time) >= 1:
-                        print("toggle power button")
-                        self.power_button_state = not self.power_button_state
-
-                        executor.submit(play_power_toggle_sound)
-                        prev_power_toggle_time = time.time()
+                    self.check_toggle_power_button(index_x, index_y)
 
             # Display power button
             img[POWER_BUTTON_Y1 + 3:POWER_BUTTON_Y2, POWER_BUTTON_X1 + 3:POWER_BUTTON_X2] = power_button_img
@@ -190,6 +173,9 @@ class VideoFeedWindowWorker(QThread):
             self.ImageUpdate.emit(img_qt_format)
 
     def mouse_controls(self, img, fingers_up, index_x, index_y, hand1_landmarks):
+        """
+        Mouse motion and mouse press operations
+        """
         # Stop holding down left mouse when condition not met
         if not (fingers_up[1] and fingers_up[4]) and self.mouse_down:
             self.mouse_down = not self.mouse_down
@@ -229,8 +215,24 @@ class VideoFeedWindowWorker(QThread):
                 self.mouse_down = not self.mouse_down
                 autopy.mouse.toggle(down=self.mouse_down)
 
+    def check_toggle_power_button(self, index_x, index_y):
+        """
+        Checks if power button toggle was activated based on finger location.
+        If it was, then power button is toggled
+        """
+        if index_x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and \
+           index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
+           (time.time() - self.prev_power_toggle_time) >= 1:
+            print("toggle power button")
+            executor.submit(play_power_toggle_sound)
+            self.prev_power_toggle_time = time.time()
+            self.power_button_state = not self.power_button_state
+
     @staticmethod
     def change_volume(img, volume_bar_y):
+        """
+        Adjust global system volume based on volume_bar_y parameter
+        """
         cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (0, 255, 0), 3)
 
         vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1)
