@@ -58,22 +58,22 @@ class MainWindow(QWidget):
         self.FeedLabel = QLabel('Comp Vision Controller')
         self.VBL.addWidget(self.FeedLabel)
 
-        self.Worker1 = VideoFeedWindowWorker()
+        self.video_feed = VideoFeedWindowWorker()
 
-        self.Worker1.start()
-        self.Worker1.ImageUpdate.connect(self.ImageUpdateSlot)
+        self.video_feed.start()
+        self.video_feed.ImageUpdate.connect(self.update_img_slot)
         self.setLayout(self.VBL)
 
-    def ImageUpdateSlot(self, Image):
-        self.FeedLabel.setPixmap(QPixmap.fromImage(Image))
+    def update_img_slot(self, img):
+        self.FeedLabel.setPixmap(QPixmap.fromImage(img))
 
 
 class VideoFeedWindowWorker(QThread):
     ImageUpdate = pyqtSignal(QImage)
+
     def run(self):
         # When true the program is "on", when False program is off
         self.power_button_state = False
-
 
         # Set up for video capture window
         cap = cv2.VideoCapture(WEBCAM, cv2.CAP_DSHOW)
@@ -171,11 +171,7 @@ class VideoFeedWindowWorker(QThread):
 
                     if index_x in range(VOL_BAR_X1, VOL_BAR_X2) and \
                             index_y in range(VOL_BAR_Y1, VOL_BAR_Y2) and fingers_up[1]:
-                        cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (0, 255, 0), 3)
-
-                        volume_bar_y = index_y
-                        vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1)
-                        volume.SetMasterVolumeLevelScalar(vol_percent, None)
+                        self.change_volume(img, index_y)
 
                     if index_x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and \
                             index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
@@ -225,40 +221,25 @@ class VideoFeedWindowWorker(QThread):
             # Display power button
             img[POWER_BUTTON_Y1 + 3:POWER_BUTTON_Y2, POWER_BUTTON_X1 + 3:POWER_BUTTON_X2] = power_button_img
 
-            # Displaying video frame
-            # cv2.imshow("Hand Gesture Controller", img)
-            # cv2.waitKey(1)
-
-            # Detect mouse clicks
-            cv2.setMouseCallback('Hand Gesture Controller', self.power_button_toggle)
-
+            # Preprocess and submit image to be displayed in GUI window
             img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
             img_qt_format = QImage(img_rgb.data, img_rgb.shape[1], img_rgb.shape[0], QImage.Format_RGB888)
             img_qt_format = img_qt_format.scaled(CAP_WIDTH, CAP_HEIGHT, Qt.KeepAspectRatio)
             self.ImageUpdate.emit(img_qt_format)
 
+    @staticmethod
+    def change_volume(img, volume_bar_y):
+        cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (0, 255, 0), 3)
 
-    def power_button_toggle(self, event, x, y, flags, params):
-        """
-        Returns the x and y coordinates of the mouse when left clicked
-          within the cv2 capture img window.
-        """
-
-        print("Method called")
-
-        if event == cv2.EVENT_LBUTTONDOWN:
-            if x in range(POWER_BUTTON_X1, POWER_BUTTON_X2) and y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2):
-                executor.submit(play_power_toggle_sound)
-                self.power_button_state = not self.power_button_state
+        vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1)
+        volume.SetMasterVolumeLevelScalar(vol_percent, None)
 
     def stop(self):
-        self.ThreadActive = False
         self.quit()
 
 
 if __name__ == "__main__":
     App = QApplication(sys.argv)
-    Root = MainWindow()
-    Root.show()
+    root = MainWindow()
+    root.show()
     sys.exit(App.exec())
