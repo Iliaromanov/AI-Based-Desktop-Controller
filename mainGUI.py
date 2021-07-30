@@ -88,8 +88,8 @@ class VideoFeedWindowWorker(QThread):
         power_button_img = cv2.imread(r'images\power-button.png')
         power_button_img = cv2.resize(power_button_img, dsize=(POWER_BUTTON_X2 - 3, POWER_BUTTON_Y2 - 3))
 
-        mouse_down = False  # When True, left mouse button is held down
-        prev_mouse_x, prev_mouse_y = 0, 0  # pyautogui.position()
+        self.mouse_down = False  # When True, left mouse button is held down
+        self.prev_mouse_x, self.prev_mouse_y = 0, 0  # pyautogui.position()
 
         while True:
             success, img = cap.read()
@@ -118,56 +118,18 @@ class VideoFeedWindowWorker(QThread):
 
                     fingers_up = htm.HandDetector.fingers_up(hand1_landmarks, hand1_type)
 
-                    # Stop holding down left mouse when condition not met
-                    if not (fingers_up[1] and fingers_up[4]) and mouse_down:
-                        mouse_down = not mouse_down
-                        autopy.mouse.toggle(down=mouse_down)
-
-                    # Mouse control
                     if index_x in range(MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2) and \
                             index_y in range(MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2):
                         cv2.rectangle(img, (MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_Y1),
                                       (MOUSE_CTRL_WINDOW_X2, MOUSE_CTRL_WINDOW_Y2), (0, 255, 0), 3)
+                        self.mouse_controls(img, fingers_up, index_x, index_y, hand1_landmarks)
 
-                        # Left click
-                        if fingers_up[1] and fingers_up[2]:
-                            dist, img, click = htm.HandDetector.find_distance(img, hand1_landmarks, radius=8)
-                            if click:
-                                autopy.mouse.click()
-                        # Right click
-                        elif fingers_up[1] and fingers_up[0]:
-                            dist, img, click = htm.HandDetector.find_distance(img, hand1_landmarks, finger_2=0,
-                                                                              radius=8)
-                            if click:
-                                autopy.mouse.click(autopy.mouse.Button.RIGHT)
-                        # Mouse motion
-                        elif fingers_up[1]:
-                            new_mouse_x = np.interp(index_x, [MOUSE_CTRL_WINDOW_X1,
-                                                              MOUSE_CTRL_WINDOW_X2], [-45, RESOLUTION_W + 45])
-                            new_mouse_y = np.interp(index_y, [MOUSE_CTRL_WINDOW_Y1,
-                                                              MOUSE_CTRL_WINDOW_Y2], [-45, RESOLUTION_H + 45])
-
-                            new_mouse_x = RESOLUTION_W if new_mouse_x > RESOLUTION_W else new_mouse_x
-                            new_mouse_y = RESOLUTION_H if new_mouse_y > RESOLUTION_H else new_mouse_y
-                            new_mouse_x = 0 if new_mouse_x < 0 else new_mouse_x
-                            new_mouse_y = 0 if new_mouse_y < 0 else new_mouse_y
-
-                            mouse_x = prev_mouse_x + (new_mouse_x - prev_mouse_x) / SMOOTHING
-                            mouse_y = prev_mouse_y + (new_mouse_y - prev_mouse_y) / SMOOTHING
-                            autopy.mouse.move(mouse_x, mouse_y)
-
-                            prev_mouse_x, prev_mouse_y = mouse_x, mouse_y
-
-                            # Holding down left click
-                            if fingers_up[4] and not mouse_down:
-                                mouse_down = not mouse_down
-                                autopy.mouse.toggle(down=mouse_down)
-                        # Activating speech to text
-                        if fingers_up == [1, 0, 0, 0, 1] and (time.time() - prev_mic_toggle_time) >= 1:
-                            print("toggle mic button")
-                            text = speech_to_text()
-                            autopy.key.type_string(text)
-                            prev_mic_toggle_time = time.time()
+                    # Activating speech to text
+                    if fingers_up == [1, 0, 0, 0, 1] and (time.time() - prev_mic_toggle_time) >= 1:
+                        print("toggle mic button")
+                        text = speech_to_text()
+                        autopy.key.type_string(text)
+                        prev_mic_toggle_time = time.time()
 
                     if index_x in range(VOL_BAR_X1, VOL_BAR_X2) and \
                             index_y in range(VOL_BAR_Y1, VOL_BAR_Y2) and fingers_up[1]:
@@ -226,6 +188,46 @@ class VideoFeedWindowWorker(QThread):
             img_qt_format = QImage(img_rgb.data, img_rgb.shape[1], img_rgb.shape[0], QImage.Format_RGB888)
             img_qt_format = img_qt_format.scaled(CAP_WIDTH, CAP_HEIGHT, Qt.KeepAspectRatio)
             self.ImageUpdate.emit(img_qt_format)
+
+    def mouse_controls(self, img, fingers_up, index_x, index_y, hand1_landmarks):
+        # Stop holding down left mouse when condition not met
+        if not (fingers_up[1] and fingers_up[4]) and self.mouse_down:
+            self.mouse_down = not self.mouse_down
+            autopy.mouse.toggle(down=self.mouse_down)
+
+        # Left click
+        if fingers_up[1] and fingers_up[2]:
+            dist, img, click = htm.HandDetector.find_distance(img, hand1_landmarks, radius=8)
+            if click:
+                autopy.mouse.click()
+        # Right click
+        elif fingers_up[1] and fingers_up[0]:
+            dist, img, click = htm.HandDetector.find_distance(img, hand1_landmarks, finger_2=0,
+                                                              radius=8)
+            if click:
+                autopy.mouse.click(autopy.mouse.Button.RIGHT)
+        # Mouse motion
+        elif fingers_up[1]:
+            new_mouse_x = np.interp(index_x, [MOUSE_CTRL_WINDOW_X1,
+                                              MOUSE_CTRL_WINDOW_X2], [-45, RESOLUTION_W + 45])
+            new_mouse_y = np.interp(index_y, [MOUSE_CTRL_WINDOW_Y1,
+                                              MOUSE_CTRL_WINDOW_Y2], [-45, RESOLUTION_H + 45])
+
+            new_mouse_x = RESOLUTION_W if new_mouse_x > RESOLUTION_W else new_mouse_x
+            new_mouse_y = RESOLUTION_H if new_mouse_y > RESOLUTION_H else new_mouse_y
+            new_mouse_x = 0 if new_mouse_x < 0 else new_mouse_x
+            new_mouse_y = 0 if new_mouse_y < 0 else new_mouse_y
+
+            mouse_x = self.prev_mouse_x + (new_mouse_x - self.prev_mouse_x) / SMOOTHING
+            mouse_y = self.prev_mouse_y + (new_mouse_y - self.prev_mouse_y) / SMOOTHING
+            autopy.mouse.move(mouse_x, mouse_y)
+
+            self.prev_mouse_x, self.prev_mouse_y = mouse_x, mouse_y
+
+            # Holding down left click
+            if fingers_up[4] and not self.mouse_down:
+                self.mouse_down = not self.mouse_down
+                autopy.mouse.toggle(down=self.mouse_down)
 
     @staticmethod
     def change_volume(img, volume_bar_y):
