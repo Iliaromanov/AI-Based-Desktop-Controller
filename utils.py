@@ -12,10 +12,11 @@ def execute_in_thread(f):
     Used to execute functions in threads
     (makes functions run in parallel with main program allowing for continuous video feed)
     """
-    @wraps(f)
+    @wraps(f)  # to keep the name and docstring of f instead of changing it to execute_in_thread
     def wrapper(*args, **kwargs):
         executor = ThreadPoolExecutor()
         executor.submit(f)
+        executor.shutdown(wait=False)
 
     return wrapper
 
@@ -44,10 +45,10 @@ def check_webcam_resolution(desired_width, desired_height, webcam=0):
 
 @execute_in_thread
 def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
-    '''
+    """
     Listens to audio input from microphone and returns text string recognized
-    by google speech recognition api
-    '''
+    by google's web speech recognition api
+    """
     r = sr.Recognizer()
 
     with sr.Microphone() as source:
