@@ -120,8 +120,7 @@ class VideoFeedWindowWorker(QThread):
                     # Activating speech to text
                     if fingers_up == [1, 0, 0, 0, 1] and (time.time() - prev_mic_toggle_time) >= 1:
                         print("toggle speech to text")
-                        text = speech_to_text()
-                        autopy.key.type_string(text)
+                        speech_to_text()
                         prev_mic_toggle_time = time.time()
 
                     if index_x in range(VOL_BAR_X1, VOL_BAR_X2) and \

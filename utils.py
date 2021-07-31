@@ -1,4 +1,5 @@
 import cv2
+import autopy
 import speech_recognition as sr
 from concurrent.futures import ThreadPoolExecutor
 from functools import wraps
@@ -6,9 +7,10 @@ from pydub import AudioSegment
 from pydub.playback import play
 
 
-def execute_as_thread(f):
+def execute_in_thread(f):
     """
-    Used to execute functions as threads
+    Used to execute functions in threads
+    (makes functions run in parallel with main program allowing for continuous video feed)
     """
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -40,6 +42,7 @@ def check_webcam_resolution(desired_width, desired_height, webcam=0):
     return result_w, result_h
 
 
+@execute_in_thread
 def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
     '''
     Listens to audio input from microphone and returns text string recognized
@@ -57,10 +60,12 @@ def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
             print(err)
             return ""
 
-        return result
+        # Type the result
+        if result:
+            autopy.key.type_string(result)
 
 
-@execute_as_thread
+@execute_in_thread
 def play_power_toggle_sound():
     """
     Uses pydub to play power-toggle.wav sound (function defined for threading purposes)
