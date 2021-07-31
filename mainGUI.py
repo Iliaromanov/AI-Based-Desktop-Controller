@@ -8,7 +8,6 @@ import pyautogui
 import autopy
 import numpy as np
 import time
-from concurrent.futures import ThreadPoolExecutor
 
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
@@ -44,8 +43,6 @@ devices = AudioUtilities.GetSpeakers()
 interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
 volume = cast(interface, POINTER(IAudioEndpointVolume))
 ###################################################################
-
-executor = ThreadPoolExecutor()
 
 
 class MainWindow(QWidget):
@@ -224,7 +221,7 @@ class VideoFeedWindowWorker(QThread):
            index_y in range(POWER_BUTTON_Y1, POWER_BUTTON_Y2) and \
            (time.time() - self.prev_power_toggle_time) >= 1:
             print("toggle power button")
-            executor.submit(play_power_toggle_sound)
+            play_power_toggle_sound()
             self.prev_power_toggle_time = time.time()
             self.power_button_state = not self.power_button_state
 
