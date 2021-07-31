@@ -122,7 +122,7 @@ class HandDetector:
 
         click = False
 
-        if draw and abs(y1 - y2) < 30:
+        if draw and (abs(y1 - y2) < 30 or finger_2 != 2 or finger_1 != 1):
             cv2.circle(img, (x1, y1), radius, (255, 0, 0), cv2.FILLED)
             cv2.circle(img, (x2, y2), radius, (255, 0, 0), cv2.FILLED)
             cv2.circle(img, (center_x, center_y), radius, (255, 0, 0), cv2.FILLED)
