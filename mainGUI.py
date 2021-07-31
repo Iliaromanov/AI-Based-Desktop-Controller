@@ -29,14 +29,13 @@ CAP_WIDTH, CAP_HEIGHT = 640, 360  # RESOLUTION_W // 2, RESOLUTION_H // 2
 CAP_WIDTH, CAP_HEIGHT = check_webcam_resolution(CAP_WIDTH, CAP_HEIGHT, WEBCAM)
 
 # Set other coordinate constants based on CAP_WIDTH and CAP_HEIGHT
-VOL_BAR_X1, VOL_BAR_X2 = round(CAP_WIDTH / 64), round(CAP_WIDTH * 5 / 64)  # 250, 650
+VOL_BAR_X1, VOL_BAR_X2 = int(CAP_WIDTH - round(CAP_WIDTH * 6/64)), int(CAP_WIDTH - round(CAP_WIDTH / 64))  #round(CAP_WIDTH / 64), round(CAP_WIDTH * 5 / 64)  # 250, 650
 VOL_BAR_Y1, VOL_BAR_Y2 = round(CAP_HEIGHT * 5 / 18), round(CAP_HEIGHT * 13 / 18)  # 25, 65
-MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = round(CAP_WIDTH * 5 / 32), round(CAP_WIDTH * 175 / 192)
+MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = int(CAP_WIDTH - round(CAP_WIDTH * 175 / 192)),int(CAP_WIDTH - round(CAP_WIDTH * 5 / 32)) # round(CAP_WIDTH * 5 / 32), round(CAP_WIDTH * 175 / 192)
 MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2 = round(CAP_HEIGHT * 7 / 108), VOL_BAR_Y2
-POWER_BUTTON_X1, POWER_BUTTON_X2 = 0, round(CAP_WIDTH * 5 / 48)
+POWER_BUTTON_X1, POWER_BUTTON_X2 = int(CAP_WIDTH - round(CAP_WIDTH * 5 / 48)-3), int(CAP_WIDTH - 3)  # 0, round(CAP_WIDTH * 5 / 48)
 POWER_BUTTON_Y1, POWER_BUTTON_Y2 = 0, round(CAP_HEIGHT * 5 / 27)
-MIC_BUTTON_X1, MIC_BUTTON_X2 = POWER_BUTTON_X2, POWER_BUTTON_X2 * 2
-MIC_BUTTON_Y1, MIC_BUTTON_Y2 = POWER_BUTTON_Y1, POWER_BUTTON_Y2
+
 SMOOTHING = 5  # Determines mouse movement sensitivity
 BASE_COLOR = (250, 0, 0)
 
@@ -82,7 +81,8 @@ class VideoFeedWindowWorker(QThread):
         prev_mic_toggle_time = 0
 
         power_button_img = cv2.imread(r'images\power-button.png')
-        power_button_img = cv2.resize(power_button_img, dsize=(POWER_BUTTON_X2 - 3, POWER_BUTTON_Y2 - 3))
+        power_b_side_length = POWER_BUTTON_X2 - POWER_BUTTON_X1 - 3
+        power_button_img = cv2.resize(power_button_img, dsize=(power_b_side_length, power_b_side_length))
 
         self.power_button_state = False  # When true the controls are "on", when False controls are "off"
         self.prev_power_toggle_time = 0
@@ -94,7 +94,7 @@ class VideoFeedWindowWorker(QThread):
             img = cv2.flip(img, 1)
 
             if self.power_button_state:
-                cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2),
+                cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_Y2),
                               (0, 255, 0), 3)
                 detector.find_hands(img)
                 hand1_landmarks, hand1_type = detector.find_positions(img, hand_num=0)
@@ -154,7 +154,7 @@ class VideoFeedWindowWorker(QThread):
                 cv2.putText(img, f"FPS: {int(fps)}", (VOL_BAR_X1, 495),
                             cv2.FONT_HERSHEY_COMPLEX, 1, BASE_COLOR, 2)
             else:
-                cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_X2),
+                cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_Y2),
                               (0, 0, 255), 3)
 
                 detector.find_hands(img, draw=False)
