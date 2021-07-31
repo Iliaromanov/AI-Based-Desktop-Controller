@@ -6,6 +6,7 @@ from functools import wraps
 from pydub import AudioSegment
 from pydub.playback import play
 
+executor = ThreadPoolExecutor(max_workers=1)
 
 def execute_in_thread(f):
     """
@@ -14,9 +15,7 @@ def execute_in_thread(f):
     """
     @wraps(f)  # to keep the name and docstring of f instead of changing it to execute_in_thread
     def wrapper(*args, **kwargs):
-        executor = ThreadPoolExecutor()
         executor.submit(f)
-        executor.shutdown(wait=False)
 
     return wrapper
 
@@ -69,7 +68,7 @@ def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
 @execute_in_thread
 def play_power_toggle_sound():
     """
-    Uses pydub to play power-toggle.wav sound (function defined for threading purposes)
+    Uses pydub to play power-toggle.wav sound
     """
     sound = AudioSegment.from_wav('sounds/power-toggle.wav')
     play(sound)
