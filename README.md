@@ -1,4 +1,5 @@
-# CompVision-DesktopAssistant
+# Windows-CompVision-Controller
+
 Windows computer vision assistant built using computer vision with Python, OpenCV and Mediapipe. Also, supports speech to text based typing triggered by hand gesture using google's web speech to text API.
 <!--Collection of tools for Windows users built using computer vision with Python, OpenCV and Mediapipe-->
 
