@@ -4,50 +4,19 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 
 import cv2
-import pyautogui
 import autopy
 import numpy as np
 import time
 
-from ctypes import cast, POINTER
-from comtypes import CLSCTX_ALL
-from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
-
 import HandTrackingModule as htm  # import created hand tracking module
-from utils import check_webcam_resolution, speech_to_text, play_power_toggle_sound
-
-
-# Setting Constants
-###################################################################
-WEBCAM = 0  # Change this variable to change which webcam is used; 0=default webcam, 1=second webcam, etc.
-RESOLUTION_W, RESOLUTION_H = pyautogui.size()
-print(f"Detected screen resolution: {RESOLUTION_W}x{RESOLUTION_H}")
-
-CAP_WIDTH, CAP_HEIGHT = 640, 360  # RESOLUTION_W // 2, RESOLUTION_H // 2
-# Make sure CAP_WIDTH and CAP_HEIGHT constants are supported by webcam driver, if not update them
-CAP_WIDTH, CAP_HEIGHT = check_webcam_resolution(CAP_WIDTH, CAP_HEIGHT, WEBCAM)
-
-# Set other coordinate constants based on CAP_WIDTH and CAP_HEIGHT
-VOL_BAR_X1, VOL_BAR_X2 = int(CAP_WIDTH - round(CAP_WIDTH * 6/64)), int(CAP_WIDTH - round(CAP_WIDTH / 64))  #round(CAP_WIDTH / 64), round(CAP_WIDTH * 5 / 64)  # 250, 650
-VOL_BAR_Y1, VOL_BAR_Y2 = round(CAP_HEIGHT * 5 / 18), round(CAP_HEIGHT * 13 / 18)  # 25, 65
-MOUSE_CTRL_WINDOW_X1, MOUSE_CTRL_WINDOW_X2 = int(CAP_WIDTH - round(CAP_WIDTH * 175 / 192)),int(CAP_WIDTH - round(CAP_WIDTH * 5 / 32)) # round(CAP_WIDTH * 5 / 32), round(CAP_WIDTH * 175 / 192)
-MOUSE_CTRL_WINDOW_Y1, MOUSE_CTRL_WINDOW_Y2 = round(CAP_HEIGHT * 7 / 108), VOL_BAR_Y2
-POWER_BUTTON_X1, POWER_BUTTON_X2 = int(CAP_WIDTH - round(CAP_WIDTH * 5 / 48)-3), int(CAP_WIDTH - 3)  # 0, round(CAP_WIDTH * 5 / 48)
-POWER_BUTTON_Y1, POWER_BUTTON_Y2 = 0, round(CAP_HEIGHT * 5 / 27)
-
-SMOOTHING = 5  # Determines mouse movement sensitivity
-BASE_COLOR = (250, 0, 0)
-
-# Retrieving computer audio setup information
-devices = AudioUtilities.GetSpeakers()
-interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
-volume = cast(interface, POINTER(IAudioEndpointVolume))
-###################################################################
+from utils import speech_to_text, play_power_toggle_sound
+from config import *
 
 
 class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.setWindowFlags(Qt.WindowStaysOnTopHint)  # Uncomment to display window on top of all other open apps
 
         self.VBL = QVBoxLayout()
 
@@ -147,8 +116,8 @@ class VideoFeedWindowWorker(QThread):
                 fps = 1 / (cur_time - prev_time)
                 prev_time = cur_time
                 # Displaying FPS
-                cv2.putText(img, f"FPS: {int(fps)}", (VOL_BAR_X1, 495),
-                            cv2.FONT_HERSHEY_COMPLEX, 1, BASE_COLOR, 2)
+                cv2.putText(img, f"FPS: {int(fps)}", (MOUSE_CTRL_WINDOW_X2, int(CAP_HEIGHT * 4/5)),
+                            cv2.FONT_HERSHEY_COMPLEX, CAP_HEIGHT / 500, BASE_COLOR, 2)
             else:
                 cv2.rectangle(img, (POWER_BUTTON_X1, POWER_BUTTON_Y1), (POWER_BUTTON_X2, POWER_BUTTON_Y2),
                               (0, 0, 255), 3)
@@ -190,6 +159,8 @@ class VideoFeedWindowWorker(QThread):
                 autopy.mouse.click(autopy.mouse.Button.RIGHT)
         # Mouse motion
         elif fingers_up[1]:
+            cv2.circle(img, (index_x, index_y), 6, BASE_COLOR, cv2.FILLED)
+
             new_mouse_x = np.interp(index_x, [MOUSE_CTRL_WINDOW_X1,
                                               MOUSE_CTRL_WINDOW_X2], [-45, RESOLUTION_W + 45])
             new_mouse_y = np.interp(index_y, [MOUSE_CTRL_WINDOW_Y1,
@@ -232,6 +203,11 @@ class VideoFeedWindowWorker(QThread):
         cv2.rectangle(img, (VOL_BAR_X1, VOL_BAR_Y1), (VOL_BAR_X2, VOL_BAR_Y2), (0, 255, 0), 3)
 
         vol_percent = (VOL_BAR_Y2 - volume_bar_y) / (VOL_BAR_Y2 - VOL_BAR_Y1)
+
+        # Displaying Volume Level Percentage in Green
+        cv2.putText(img, f"{round(vol_percent * 100)}%", (VOL_BAR_X1, VOL_BAR_Y1 - 10),
+                    cv2.FONT_HERSHEY_COMPLEX, CAP_HEIGHT / 540, (0, 255, 0), 3)
+
         volume.SetMasterVolumeLevelScalar(vol_percent, None)
 
     def stop(self):
