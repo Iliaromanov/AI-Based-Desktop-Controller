@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 
+
 class HandDetector:
     finger_tip_ids = [4, 8, 12, 16, 20]  # landmark IDs for finger tips [thumb, index, middle, ring, pinky]
 
@@ -136,6 +137,10 @@ class HandDetector:
 
 
 def main():
+    ###############
+    # For testing #
+    ###############
+
     # Create video object
     capture = cv2.VideoCapture(0)  # using webcam number 0
 
