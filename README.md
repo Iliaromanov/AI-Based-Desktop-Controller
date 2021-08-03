@@ -29,7 +29,7 @@ To toggle the controller on and off users can hover their index finger over the 
 
 **Mouse Pad and Volume Controller**
 
-To use the mouse pad or volume controller the users hand must be in the dedicated area outlined in blue on the feedback window. When a hand is detected in a controller area, the area is outlined in green as can be seen in the demo below. There are also sound effects when a hand enters or leaves these areas that are useful when the feedback window is minimized.
+To use the mouse pad or volume controller the users hand must be in the dedicated area outlined in blue on the feedback window. When a hand is detected in a controller area, the area is outlined in green as can be seen in the demo below. There are also sound effects when a hand enters or leaves these areas that are useful when the feedback window is minimized. Both controllers operate based on the location of the index finger.
 
 <img src="images/mouse_pad-volume_control-demo.gif" width="600" height="350" />
 
@@ -46,6 +46,8 @@ To left click bring your middle finger up with your index and move them together
 ----------------------------------------------------------------
 
 **Hold Down Left Click**
+
+To hold down the left mouse key lift your pinky up with your index finger and to release it lower your pinky. The cursor does not stop moving when the left mouse key is pressed this way and will be positioned based on the location of the index finger as it is in default mouse motion mode. This method can be used for single clicks, but is more useful for dragging and dropping items since the mmouse key is not released immediately after it is pressed.
 
 <img src="images/hold_down_left_click-demo.gif" width="600" height="350" />
 
