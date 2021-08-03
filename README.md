@@ -41,6 +41,8 @@ To left click bring your middle finger up with your index and move them together
 
 <img src="images/right_click-left_click-demo.gif" width="600" height="350" />
 
+*Note that this version of the left click presses the left mouse key and immediately releases it. Thus, it is useful for double-clicks as demonstrated in the above demo gif*
+
 ----------------------------------------------------------------
 
 **Hold Down Left Click**
