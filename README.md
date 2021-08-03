@@ -37,6 +37,8 @@ To use the mouse pad or volume controller the users hand must be in the dedicate
 
 **Left and Right click**
 
+<img src="images/right_click-left_click-demo.gif" width="600" height="350" />
+
 ----------------------------------------------------------------
 
 **Hold Down Left Click**
