@@ -47,6 +47,8 @@ To left click bring your middle finger up with your index and move them together
 
 **Hold Down Left Click**
 
+<img src="images/hold_down_left_click-demo.gif" width="600" height="350" />
+
 ----------------------------------------------------------------
 
 **Speech to Text**
