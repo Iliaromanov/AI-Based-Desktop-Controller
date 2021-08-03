@@ -25,14 +25,24 @@ To toggle the controller on and off users can hover their index finger over the 
 
 <img src="images/power-button-demo.gif" width="600" height="350" />
 
+----------------------------------------------------------------
+
 **Mouse Pad and Volume Controller**
 
 To use the mouse pad or volume controller the users hand must be in the dedicated area outlined in blue on the feedback window. When a hand is detected in a controller area, the area is outlined in green as can be seen in the demo below. There are also sound effects when a hand enters or leaves these areas that are useful when the feedback window is minimized.
 
 <img src="images/mouse_pad-volume_control-demo.gif" width="600" height="350" />
 
+----------------------------------------------------------------
+
 **Left and Right click**
+
+----------------------------------------------------------------
 
 **Hold Down Left Click**
 
+----------------------------------------------------------------
+
 **Speech to Text**
+
+----------------------------------------------------------------
