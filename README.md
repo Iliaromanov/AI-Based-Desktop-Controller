@@ -1,6 +1,8 @@
 # Windows-CompVision-Controller
 
-Windows computer vision assistant built using computer vision with Python, OpenCV and Mediapipe. Also, supports speech to text based typing triggered by hand gesture using google's web speech to text API.
+Windows computer vision assistant built using computer vision with Python, OpenCV and Mediapipe. Also, supports speech to text based typing triggered by hand gesture using google's web speech to text API. 
+
+Can be used as a complete alternative to a physical mouse and keyboard!
 <!--Collection of tools for Windows users built using computer vision with Python, OpenCV and Mediapipe-->
 
 <img src="https://img.shields.io/badge/-Python-green" /> <img src="https://img.shields.io/badge/-OpenCV-blue" /> <img src="https://img.shields.io/badge/-Mediapipe-yellow" /> <img src="https://img.shields.io/badge/-Google_SpeechToText_API-red" /> 
@@ -17,3 +19,16 @@ https://user-images.githubusercontent.com/47427592/127780214-e368f34d-b88f-4f36-
 
 ## Usage
 
+**Power Button**
+
+To toggle the controller on and off users can hover their index finger over the power button in the top right corner of the capture video. The toggle makes a sound so it can be used even when the capture video window is minimized by just moving the hand in top right corner direction until the sound is played. This feature helps prevent users from unintentionally triggering actions with the controller.
+
+<img src="images/power-button-demo.gif" width="600" height="350" />
+
+**Mouse Pad and Volume Controllers**
+
+**Left and Right click**
+
+**Hold Down Left Click**
+
+**Speech to Text**
