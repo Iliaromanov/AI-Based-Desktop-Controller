@@ -37,6 +37,8 @@ To use the mouse pad or volume controller the users hand must be in the dedicate
 
 **Left and Right click**
 
+To left click bring your middle finger up with your index and move them together. To right click bring out your thumb with your index finger and move them together. For both click types the mouse stops moving at the position where the secondary finger is lifted to make it easier for the user to accurately click. The clicks are activated when the distance between the index and secondary finger is less than a certain threshold and the middle circle turns green when a click occurs.
+
 <img src="images/right_click-left_click-demo.gif" width="600" height="350" />
 
 ----------------------------------------------------------------
