@@ -60,6 +60,8 @@ def speech_to_text(start_listen_timeout=5, listen_time_limit=10):
             print(err)
             return ""
 
+        result = result.replace("space", " ")
+
         # Type the result
         if result:
             autopy.key.type_string(result)
