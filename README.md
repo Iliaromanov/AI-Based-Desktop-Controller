@@ -54,4 +54,8 @@ To hold down the left mouse key lift your pinky up with your index finger and to
 
 **Speech to Text**
 
+<img src="images/speech_to_text-demo.gif" width="600" height="350" />
+
 ----------------------------------------------------------------
+
+## Installation
