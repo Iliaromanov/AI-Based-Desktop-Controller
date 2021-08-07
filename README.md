@@ -54,4 +54,10 @@ To hold down the left mouse key lift your pinky up with your index finger and to
 
 **Speech to Text**
 
+To trigger speech to text recognition lift your pinky and thumb. This hand position does not need to be held up the entire time you are talking, the voice recording will end when you stop talking and then you may make the gesture to trigger it again. Supported special characters are `'exclamation mark'` &rarr; `!`,  `'question mark'` &rarr; `?`, `'period'` &rarr; `.`, `'comma'` &rarr; `,`, `'space'`, &rarr; `' '`, and numbers.
+
+<img src="images/speech_to_text-demo.gif" width="600" height="350" />
+
 ----------------------------------------------------------------
+
+## Installation
