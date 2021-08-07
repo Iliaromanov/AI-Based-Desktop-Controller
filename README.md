@@ -65,3 +65,19 @@ To trigger speech to text recognition lift your pinky and thumb. This hand posit
 ----------------------------------------------------------------
 
 ## Installation
+
+Insall dependencies:
+
+`pip install -r requirements.txt`
+
+Clone the repository:
+
+`git clone https://github.com/Iliaromanov/Windows-CompVision-Controller.git`
+
+Cd into the application folder:
+
+`cd Windows-CompVision-Controller`
+
+Run the application:
+
+`python mainGUI.py`
