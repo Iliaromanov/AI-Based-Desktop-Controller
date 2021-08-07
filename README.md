@@ -60,4 +60,8 @@ To trigger speech to text recognition lift your pinky and thumb. This hand posit
 
 ----------------------------------------------------------------
 
+***More cool new features coming soon!***
+
+----------------------------------------------------------------
+
 ## Installation
