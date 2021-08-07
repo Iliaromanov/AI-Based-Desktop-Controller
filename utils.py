@@ -13,7 +13,7 @@ def execute_in_thread(f):
     Used to execute functions in threads
     (makes functions run in parallel with main program allowing for continuous video feed)
     """
-    @wraps(f)  # to keep the name and docstring of f instead of changing it to execute_in_thread
+    @wraps(f)  # to keep the name and docstring of f instead of changing it to execute_in_thread docstring
     def wrapper(*args, **kwargs):
         executor.submit(f)
 

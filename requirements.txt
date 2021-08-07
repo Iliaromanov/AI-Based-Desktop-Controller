@@ -1,0 +1,9 @@
+autopy==4.0.0
+mediapipe==0.8.3
+numpy==1.19.2
+opencv-python==4.5.2.52
+PyAutoGUI==0.9.52
+pycaw==20181226
+pydub==0.25.1
+PyQt5==5.15.4
+SpeechRecognition==3.8.1
