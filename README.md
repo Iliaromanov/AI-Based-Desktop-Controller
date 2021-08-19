@@ -66,18 +66,10 @@ To trigger speech to text recognition lift your pinky and thumb. This hand posit
 
 ## Installation
 
-Insall dependencies:
+> `git clone https://github.com/Iliaromanov/Resume-Chat-Bot.git`
 
-`pip install -r requirements.txt`
+> `cd AI-Based-Desktop-Controller`
 
-Clone the repository:
+> `pip install -r requirements.txt`
 
-`git clone https://github.com/Iliaromanov/AI-Based-Desktop-Controller.git`
-
-Cd into the application folder:
-
-`cd Windows-CompVision-Controller`
-
-Run the application:
-
-`python mainGUI.py`
+> `python mainGUI.py`
