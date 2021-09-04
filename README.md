@@ -1,6 +1,6 @@
 # AI-Based-Desktop-Controller
 
-Computer vision based alternative to a physical mouse and keyboard built using computer vision with Python, OpenCV and Mediapipe. Allows intuitive hand gesture based control of mouse motion and mouse buttons, a hand gesture based master volume slider for convinience, and speech to text typing functionality using google's web speech to text API also triggered by hand gesture.
+Computer vision based alternative to a physical mouse and keyboard built using computer vision with Python, OpenCV and Mediapipe. Allows intuitive hand gesture based control of mouse motion and mouse buttons, a hand gesture based master volume slider for convenience, and speech to text typing functionality using google's web speech to text API also triggered by hand gesture.
 
 <!--Collection of tools for Windows users built using computer vision with Python, OpenCV and Mediapipe-->
 
