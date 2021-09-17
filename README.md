@@ -3,8 +3,13 @@
 Computer vision based alternative to a physical mouse and keyboard built using computer vision with Python, OpenCV and Mediapipe. Allows intuitive hand gesture based control of mouse motion and mouse buttons, a hand gesture based master volume slider for convenience, and speech-to-text typing functionality using google's web speech to text API also triggered by hand gesture.
 
 <!--Collection of tools for Windows users built using computer vision with Python, OpenCV and Mediapipe-->
+![Python](https://img.shields.io/badge/-Python-05122A?style=flat&logo=Python)
+![OpenCV](https://img.shields.io/badge/-OpenCV-05122A?style=flat&logo=OpenCV)&nbsp;
+![Mediapipe](https://img.shields.io/badge/-Mediapipe-05122A?style=flat&logo=Mediapipe)&nbsp;
+![Python](https://img.shields.io/badge/-Google_SpeechToText_API-05122A?style=flat&logo=Google_SpeechToText_API)&nbsp;
 
-<img src="https://img.shields.io/badge/-Python-green" /> <img src="https://img.shields.io/badge/-OpenCV-blue" /> <img src="https://img.shields.io/badge/-Mediapipe-yellow" /> <img src="https://img.shields.io/badge/-Google_SpeechToText_API-red" /> 
+<!-- 
+<img src="https://img.shields.io/badge/-Python-green" /> <img src="https://img.shields.io/badge/-OpenCV-blue" /> <img src="https://img.shields.io/badge/-Mediapipe-yellow" /> <img src="https://img.shields.io/badge/-Google_SpeechToText_API-red" />  -->
 
 <!-- Maybe add audio tool that runs specific program so the program isn't always on. e.g. for volume control, user would say "turn on volume control" to run the program
   Would be super sick if you used arduino for all this shit too.
