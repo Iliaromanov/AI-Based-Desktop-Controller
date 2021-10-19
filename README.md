@@ -5,11 +5,11 @@ Computer vision based alternative to a physical mouse and keyboard built using c
 <!--Collection of tools for Windows users built using computer vision with Python, OpenCV and Mediapipe-->
 ![Python](https://img.shields.io/badge/-Python-05122A?style=flat&logo=Python)
 ![OpenCV](https://img.shields.io/badge/-OpenCV-05122A?style=flat&logo=OpenCV)&nbsp;
-![Mediapipe](https://img.shields.io/badge/-Mediapipe-05122A?style=flat&logo=Mediapipe)&nbsp;
-![Python](https://img.shields.io/badge/-Google_SpeechToText_API-05122A?style=flat&logo=Google_SpeechToText_API)&nbsp;
+![Mediapipe](https://img.shields.io/badge/-Mediapipe-05122A?style=flat&logo=google-podcasts&logoColor=green)&nbsp;
+![Python](https://img.shields.io/badge/-Google_SpeechToText_API-05122A?style=flat&logo=google&&logoColor=yellow)&nbsp;
 
 <!-- 
-<img src="https://img.shields.io/badge/-Python-green" /> <img src="https://img.shields.io/badge/-OpenCV-blue" /> <img src="https://img.shields.io/badge/-Mediapipe-yellow" /> <img src="https://img.shields.io/badge/-Google_SpeechToText_API-red" />  -->
+<img src="https://img.shields.io/badge/-Python" /> <img src="https://img.shields.io/badge/-OpenCV-blue" /> <img src="https://img.shields.io/badge/-Mediapipe-yellow" /> <img src="https://img.shields.io/badge/Google_SpeechToText_API.svg?logo=python&logoColor=white" />-->
 
 <!-- Maybe add audio tool that runs specific program so the program isn't always on. e.g. for volume control, user would say "turn on volume control" to run the program
   Would be super sick if you used arduino for all this shit too.
